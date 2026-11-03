@@ -1,0 +1,7 @@
+{
+  "extends": "@comercio/config/tsconfig.lib",
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "noEmit": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "extends": "@comercio/config/tsconfig.vite",
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["vite/client", "vite-plugin-pwa/client"]
+  }
+}

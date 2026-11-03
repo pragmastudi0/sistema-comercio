@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Datos para el lanzamiento · #turisteando</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --text: #111111;
+    --muted: #666666;
+    --border: #e0e0e0;
+    --field: #fbfbfb;
+    --accent: #E93BA1;
+    --btn-dark: #1f2937;
+    --p1: #c0392b;
+    --p2: #d68910;
+    --p3: #27ae60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 16px 14px 60px;
+    line-height: 1.5;
+  }
+  .container { max-width: 880px; margin: 0 auto; }
+
+  header { text-align: center; padding: 24px 0 8px; }
+  header h1 { margin: 0 0 8px; font-size: 32px; letter-spacing: -0.02em; }
+  header .sub { color: var(--muted); font-size: 14px; }
+
+  .intro {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #333;
+  }
+  .intro b { color: var(--text); }
+
+  /* Barra superior con acciones */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    padding: 10px 14px;
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+    margin: -16px -14px 0;
+  }
+  .toolbar-inner {
+    max-width: 880px; margin: 0 auto;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .toolbar-status { font-size: 12px; color: var(--muted); }
+  .toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px; font-size: 13px;
+    color: var(--text); cursor: pointer; font-family: inherit;
+  }
+  .btn:hover { border-color: var(--text); }
+  .btn.primary { background: var(--btn-dark); color: white; border-color: var(--btn-dark); }
+  .btn.primary:hover { opacity: 0.9; border-color: var(--btn-dark); }
+  .btn.danger { color: #c0392b; }
+  .btn.danger:hover { border-color: #c0392b; }
+
+  section.prio {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+  .banner {
+    padding: 14px 20px;
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+  }
+  .banner.p1 { background: var(--p1); }
+  .banner.p2 { background: var(--p2); }
+  .banner.p3 { background: var(--p3); }
+  .banner .help {
+    display: block; font-weight: 400; font-size: 12px; opacity: 0.9; margin-top: 2px;
+  }
+
+  .group {
+    padding: 18px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .group:first-of-type { border-top: 0; }
+  .group h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label.q {
+    display: block; font-size: 14px; line-height: 1.45;
+    margin-bottom: 6px; color: var(--text);
+  }
+  .field label.q b { font-weight: 600; }
+  .field .hint {
+    display: block; font-size: 12px; color: var(--muted); margin: 2px 0 8px;
+  }
+  .field input[type="text"],
+  .field input[type="email"],
+  .field input[type="number"],
+  .field textarea {
+    width: 100%; font-family: inherit; font-size: 14px;
+    background: var(--field); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 10px; color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field textarea:focus {
+    outline: none; border-color: var(--accent);
+    background: white;
+  }
+  .field textarea { resize: vertical; min-height: 70px; }
+
+  .choices { display: flex; flex-direction: column; gap: 6px; }
+  .choices label {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 10px; border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer; font-size: 14px;
+    background: var(--field); line-height: 1.4;
+  }
+  .choices label:hover { border-color: var(--text); }
+  .choices input[type="radio"] {
+    margin-top: 3px; accent-color: var(--accent); flex-shrink: 0;
+  }
+  .choices label.selected { border-color: var(--accent); background: #fff5fb; }
+  .choices .opt-title { font-weight: 600; }
+  .choices .opt-desc { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .conditional {
+    margin-top: 10px; padding: 12px;
+    background: #fafafa; border: 1px dashed var(--border);
+    border-radius: 6px;
+    display: none;
+  }
+  .conditional.show { display: block; }
+
+  .note {
+    font-size: 13px; color: var(--muted);
+    padding: 10px 12px; margin: 0 0 16px;
+    border-left: 3px solid var(--border);
+    background: #f9f9f9; border-radius: 4px;
+    word-break: break-word;
+  }
+  .note code { background: #efefef; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+  .note b { color: var(--text); }
+
+  .saved-indicator {
+    display: inline-block; font-size: 11px; color: var(--p3);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .saved-indicator.show { opacity: 1; }
+
+  /* Banner "abrir en navegador" — visible si no corre JS */
+  .nojs-banner {
+    background: #fff3cd; border: 1px solid #ffe69c;
+    color: #664d03; border-radius: 8px;
+    padding: 12px 14px; margin: 14px 0;
+    font-size: 13px; line-height: 1.5;
+  }
+  .nojs-banner b { color: #5a4203; }
+  .nojs-banner ol { margin: 6px 0 0 18px; padding: 0; }
+  .nojs-banner li { margin: 3px 0; }
+
+  /* Bloque final con acciones */
+  .actions-end {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 20px;
+    margin: 24px 0 12px;
+    text-align: center;
+  }
+  .actions-end h2 { margin: 0 0 6px; font-size: 18px; }
+  .actions-end p { margin: 0 0 16px; color: var(--muted); font-size: 13.5px; }
+  .actions-end .btn-row {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  }
+  .actions-end .btn { padding: 10px 18px; font-size: 14px; }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal-card {
+    background: white; border-radius: 12px;
+    width: 100%; max-width: 600px; max-height: 90vh;
+    display: flex; flex-direction: column;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  }
+  .modal-card h3 { margin: 0 0 6px; font-size: 18px; }
+  .modal-card .modal-help { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+  .modal-card textarea {
+    flex: 1; min-height: 200px; width: 100%;
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px; background: #fafafa; color: var(--text);
+    resize: vertical;
+  }
+  .modal-actions {
+    margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: flex-end;
+  }
+  .modal-actions .btn { padding: 8px 14px; }
+  .copied-flash {
+    color: var(--p3); font-size: 12px; align-self: center; margin-right: auto;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .copied-flash.show { opacity: 1; }
+
+  footer {
+    text-align: center; color: var(--muted); font-size: 12px; margin-top: 32px;
+    padding: 0 8px;
+  }
+
+  /* Responsive — móvil */
+  @media (max-width: 600px) {
+    body { padding: 12px 10px 50px; }
+    .toolbar { padding: 10px; margin: -12px -10px 0; }
+    header { padding: 18px 0 4px; }
+    header h1 { font-size: 24px; }
+    header .sub { font-size: 13px; }
+    .intro { padding: 14px 16px; font-size: 13px; }
+    .banner { padding: 12px 16px; font-size: 14px; }
+    .group { padding: 14px 16px; }
+    .group h3 { font-size: 12px; margin-bottom: 12px; }
+    .field label.q { font-size: 13.5px; }
+    .field .hint, .choices label, .choices .opt-desc { font-size: 12.5px; }
+  }
+
+  /* Impresión */
+  @media print {
+    body { background: white; padding: 0; }
+    .toolbar, .btn { display: none !important; }
+    section.prio, .intro { box-shadow: none; break-inside: avoid; }
+    .field input, .field textarea { background: white; border-color: #ccc; }
+    .group { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <span class="toolbar-status">
+      Guardado automáticamente <span class="saved-indicator" id="savedInd">✓ guardado</span>
+    </span>
+  </div>
+</div>
+
+<div class="container">
+
+  <header>
+    <h1>Datos para el lanzamiento</h1>
+    <div class="sub">Sistema de gestión #turisteando · información que necesitamos de su parte</div>
+  </header>
+
+  <noscript>
+    <div class="nojs-banner">
+      <b>⚠️ Para usar este formulario necesitás activar JavaScript</b> en tu navegador.
+      También podés abrir este archivo en <b>Safari</b> o <b>Chrome</b>.
+    </div>
+  </noscript>
+
+  <!-- Banner que se queda visible si JS no corre (ej: previsualizador de WhatsApp) -->
+  <div class="nojs-banner" id="openInBrowserBanner">
+    <b>⚠️ Si los botones no responden:</b> este archivo se está abriendo en un
+    previsualizador (como el de WhatsApp) que no ejecuta JavaScript.
+    Para que funcione bien:
+    <ol>
+      <li>Tocá los <b>3 puntos</b> arriba a la derecha (o el ícono de compartir).</li>
+      <li>Elegí <b>"Abrir en Safari"</b> (iPhone) o <b>"Abrir en Chrome"</b> (Android).</li>
+    </ol>
+  </div>
+
+  <div class="intro">
+    Este documento reúne <b>los datos y definiciones que necesitamos de su parte</b> para
+    terminar de configurar el sistema y dejarlo operativo. Está dividido en <b>3 niveles
+    de prioridad</b>. Pueden completarlo en varias sesiones — todo se va guardando
+    automáticamente en este navegador.
+    <br/><br/>
+    Cuando lo tengan listo, al final del documento hay un botón <b>Enviar respuestas</b>
+    para compartirlas por WhatsApp, copiarlas o descargar el archivo.
+    <br/><br/>
+    <b>P1 · Bloqueante</b>: imprescindible para arrancar la operación real.<br/>
+    <b>P2 · Importante</b>: para una operación fluida.<br/>
+    <b>P3 · Puede esperar</b>: se va incorporando después del lanzamiento.
+  </div>
+
+  <!-- ============== P1 ============== -->
+  <section class="prio">
+    <div class="banner p1">
+      PRIORIDAD 1 · BLOQUEANTE
+      <span class="help">Sin esto no podemos terminar la configuración.</span>
+    </div>
+
+    <div class="group">
+      <h3>Estructura del negocio</h3>
+
+      <div class="field">
+        <label class="q" for="f_locales_cant"><b>Cantidad de locales activos</b> (hoy asumimos 2)</label>
+        <input type="text" id="f_locales_cant" data-save placeholder="Ej: 2" />
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_locales_nombres"><b>Nombre real de cada local</b></label>
+        <span class="hint">Uno por línea</span>
+        <textarea id="f_locales_nombres" data-save placeholder="Ej:&#10;Local Terminal&#10;Local Centro"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_locales_direcciones"><b>Dirección de cada local</b></label>
+        <span class="hint">Una por línea, en el mismo orden que arriba</span>
+        <textarea id="f_locales_direcciones" data-save placeholder="Ej:&#10;Bv. Perón 380, Córdoba&#10;..."></textarea>
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_cajas"><b>Cantidad de cajas físicas en cada local</b></label>
+        <textarea id="f_cajas" data-save placeholder="Ej:&#10;Local Terminal: 2 cajas&#10;Local Centro: 1 caja"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_depositos"><b>Depósitos físicos</b></label>
+        <span class="hint">Hoy asumimos un depósito Central + uno por local. Si manejan otros nombres o estructura distinta, indicarlo acá.</span>
+        <textarea id="f_depositos" data-save placeholder="Ej:&#10;Depósito Central&#10;Depósito Terminal&#10;..."></textarea>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Datos del comercio</h3>
+
+      <div class="field">
+        <label class="q" for="f_cuit"><b>CUIT</b> del comercio</label>
+        <input type="text" id="f_cuit" data-save placeholder="XX-XXXXXXXX-X" />
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_dir_comercial"><b>Dirección comercial completa</b></label>
+        <input type="text" id="f_dir_comercial" data-save placeholder="Calle, número, ciudad, provincia, CP" />
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_tel_fijo">Teléfono fijo (si tienen)</label>
+        <input type="text" id="f_tel_fijo" data-save placeholder="Opcional" />
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_whatsapp"><b>WhatsApp comercial</b> para los pedidos del e-commerce</label>
+        <span class="hint">Si no tienen uno separado del personal, recomendamos abrir un WhatsApp Business dedicado.</span>
+        <input type="text" id="f_whatsapp" data-save placeholder="Ej: 351 6017576" />
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_email_comercio"><b>Email de contacto</b> del comercio</label>
+        <input type="email" id="f_email_comercio" data-save placeholder="contacto@..." />
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_horario"><b>Horario de atención</b></label>
+        <textarea id="f_horario" data-save placeholder="Ej:&#10;Lun a Vie 8 a 20 hs&#10;Sáb 9 a 14 hs"></textarea>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Catálogo, stock y contactos</h3>
+
+      <div class="field">
+        <label class="q"><b>Carga del catálogo y stock inicial</b></label>
+        <span class="hint">El catálogo se puede cargar producto por producto desde el admin, o importar de una sola vez desde un Excel/CSV. Si eligen importar, necesitamos el archivo con: código, nombre, categoría, costo y stock por depósito.</span>
+        <div class="choices" data-radio="catalogo_modo">
+          <label><input type="radio" name="catalogo_modo" value="cliente" data-save>
+            <span><span class="opt-title">Lo cargamos nosotros (el cliente) desde el admin a nuestro ritmo</span></span>
+          </label>
+          <label><input type="radio" name="catalogo_modo" value="archivo" data-save>
+            <span><span class="opt-title">Les pasamos un archivo Excel/CSV y lo importan ustedes</span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q"><b>Clientes en cuenta corriente</b> — ¿manejan?</label>
+        <div class="choices" data-radio="tiene_cc">
+          <label><input type="radio" name="tiene_cc" value="si" data-save>
+            <span><span class="opt-title">Sí, tenemos clientes con cuenta corriente</span></span>
+          </label>
+          <label><input type="radio" name="tiene_cc" value="no" data-save>
+            <span><span class="opt-title">No, todo es contado</span></span>
+          </label>
+        </div>
+        <div class="conditional" data-show-when="tiene_cc=si">
+          <label class="q" for="f_cc_lista">Listado de clientes en CC (con saldos actuales)</label>
+          <span class="hint">Pueden pegar acá una lista rápida o pasarnos un Excel/PDF aparte</span>
+          <textarea id="f_cc_lista" data-save placeholder="Ej:&#10;Kiosco San Martín — saldo a favor nuestro $45.000&#10;..."></textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q"><b>Lista de proveedores</b> — ¿quieren tenerla cargada en el sistema?</label>
+        <div class="choices" data-radio="tiene_prov">
+          <label><input type="radio" name="tiene_prov" value="si" data-save>
+            <span><span class="opt-title">Sí, queremos cargar el listado de proveedores</span></span>
+          </label>
+          <label><input type="radio" name="tiene_prov" value="no" data-save>
+            <span><span class="opt-title">No por ahora</span></span>
+          </label>
+        </div>
+        <div class="conditional" data-show-when="tiene_prov=si">
+          <label class="q" for="f_prov_lista">Listado de proveedores</label>
+          <span class="hint">Nombre, contacto (teléfono/email), CUIT si lo tienen. Pueden pegar acá o pasarnos un Excel aparte.</span>
+          <textarea id="f_prov_lista" data-save placeholder="Ej:&#10;Distribuidora X — 351 1234567 — CUIT 30-..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Configuración financiera</h3>
+
+      <div class="field">
+        <label class="q" for="f_desc_efectivo"><b>Descuento por efectivo</b></label>
+        <span class="hint">¿Qué porcentaje de descuento aplican cuando se paga en efectivo? Dejar vacío si no manejan descuento.</span>
+        <input type="text" id="f_desc_efectivo" data-save placeholder="Ej: 10 %" />
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_cuotas_recargos"><b>Cuotas y recargos por tarjeta de crédito</b></label>
+        <span class="hint">Indicar qué planes de cuotas aceptan y el recargo de cada uno.</span>
+        <textarea id="f_cuotas_recargos" data-save placeholder="Ej:&#10;1 cuota — 0 %&#10;3 cuotas — 12 %&#10;6 cuotas — 25 %&#10;12 cuotas — 55 %"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_otros_metodos"><b>Recargos por otros métodos</b></label>
+        <span class="hint">Débito, QR, transferencia. Indicar si cada uno tiene recargo (o si va sin recargo).</span>
+        <textarea id="f_otros_metodos" data-save placeholder="Ej:&#10;Débito — sin recargo&#10;QR — sin recargo&#10;Transferencia — sin recargo"></textarea>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Usuarios</h3>
+
+      <div class="field">
+        <label class="q" for="f_email_dueno"><b>Email del dueño</b> para crear su usuario admin definitivo</label>
+        <input type="email" id="f_email_dueno" data-save placeholder="agus@..." />
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_cajeros"><b>Cajeros fijos</b></label>
+        <span class="hint">Nombre, apellido y email de cada uno. Uno por línea.</span>
+        <textarea id="f_cajeros" data-save placeholder="Ej:&#10;Juan Pérez — juan@...&#10;María González — maria@..."></textarea>
+      </div>
+
+      <div class="field">
+        <label class="q"><b>Encargado distinto al dueño</b> — ¿hay alguien más que administre el sistema?</label>
+        <div class="choices" data-radio="hay_encargado">
+          <label><input type="radio" name="hay_encargado" value="si" data-save>
+            <span><span class="opt-title">Sí</span></span>
+          </label>
+          <label><input type="radio" name="hay_encargado" value="no" data-save>
+            <span><span class="opt-title">No, solo el dueño</span></span>
+          </label>
+        </div>
+        <div class="conditional" data-show-when="hay_encargado=si">
+          <label class="q" for="f_encargado_datos">Datos del encargado</label>
+          <input type="text" id="f_encargado_datos" data-save placeholder="Nombre, apellido y email" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== P2 ============== -->
+  <section class="prio">
+    <div class="banner p2">
+      PRIORIDAD 2 · IMPORTANTE
+      <span class="help">Se puede lanzar sin esto, pero conviene definirlo lo antes posible.</span>
+    </div>
+
+    <div class="group">
+      <h3>Dominio</h3>
+
+      <div class="note">
+        El <b>e-commerce necesita sí o sí un dominio propio</b> para salir a producción.
+        El admin y el punto de venta no lo requieren, pero si hay dominio para la web
+        lo ideal es <b>aprovechar el mismo con subdominios</b>:<br/><br/>
+        › <code>turisteando.com.ar</code> → e-commerce<br/>
+        › <code>admin.turisteando.com.ar</code> → panel de administración<br/>
+        › <code>pos.turisteando.com.ar</code> → punto de venta
+      </div>
+
+      <div class="field">
+        <label class="q"><b>Estado del dominio</b></label>
+        <div class="choices" data-radio="dominio_estado">
+          <label><input type="radio" name="dominio_estado" value="ya_tenemos" data-save>
+            <span><span class="opt-title">Ya tenemos el dominio comprado</span></span>
+          </label>
+          <label><input type="radio" name="dominio_estado" value="vamos_registrar" data-save>
+            <span>
+              <span class="opt-title">Lo vamos a registrar ahora</span>
+              <span class="opt-desc">Recomendamos comprarlo en <b>donweb.com.ar</b> (registrador argentino, sencillo de gestionar). Si prefieren otro registrador, también sirve.</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_dominio_nombre"><b>Dominio que van a usar</b></label>
+        <input type="text" id="f_dominio_nombre" data-save placeholder="Ej: turisteando.com.ar" />
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_dominio_acceso"><b>Datos de acceso al panel del registrador</b></label>
+        <span class="hint">Una vez registrado, necesitamos el usuario y contraseña del panel (DonWeb o el registrador que usen) para configurar los DNS y dejar los 3 subdominios apuntando. Pueden completarlo acá o pasárnoslo por canal privado.</span>
+        <textarea id="f_dominio_acceso" data-save placeholder="Registrador:&#10;Usuario:&#10;Contraseña:"></textarea>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Sitio web mayorista</h3>
+
+      <div class="field">
+        <label class="q"><b>¿Qué quieren que muestre el sitio web?</b></label>
+        <div class="choices" data-radio="web_alcance">
+          <label><input type="radio" name="web_alcance" value="A" data-save>
+            <span>
+              <span class="opt-title">Opción A · solo catálogo</span>
+              <span class="opt-desc">Únicamente productos, categorías, búsqueda y carrito hacia WhatsApp. Sin páginas adicionales.</span>
+            </span>
+          </label>
+          <label><input type="radio" name="web_alcance" value="B" data-save>
+            <span>
+              <span class="opt-title">Opción B · catálogo + páginas institucionales</span>
+              <span class="opt-desc">Catálogo + "Quiénes somos", "Contacto", "Envíos" y "Términos".</span>
+            </span>
+          </label>
+        </div>
+        <div class="conditional" data-show-when="web_alcance=B">
+          <label class="q" for="f_web_quienes">"Quiénes somos" — texto</label>
+          <textarea id="f_web_quienes" data-save placeholder="Texto para la página..."></textarea>
+          <label class="q" for="f_web_contacto" style="margin-top:12px;">"Contacto" — datos a mostrar</label>
+          <textarea id="f_web_contacto" data-save placeholder="Teléfono, WhatsApp, email, dirección, redes..."></textarea>
+          <label class="q" for="f_web_envios" style="margin-top:12px;">"Envíos" — política y zonas</label>
+          <textarea id="f_web_envios" data-save placeholder="Cómo trabajan los envíos, zonas, costos, tiempos..."></textarea>
+          <label class="q" for="f_web_terminos" style="margin-top:12px;">"Términos" — condiciones</label>
+          <textarea id="f_web_terminos" data-save placeholder="Condiciones generales de venta..."></textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_pedido_minimo"><b>Pedido mínimo</b> del e-commerce mayorista, en pesos</label>
+        <span class="hint">Hoy está en 0 (sin mínimo). Si quieren establecer un piso, indicarlo.</span>
+        <input type="text" id="f_pedido_minimo" data-save placeholder="Ej: 50000  ó  sin mínimo" />
+      </div>
+
+      <div class="note">
+        <b>Lista de precios mayorista:</b> qué productos llevan precio mayorista y cuáles
+        van solo a consumidor final lo definen ustedes después, producto por producto,
+        desde el admin. No hace falta resolverlo ahora.
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_wa_mensaje"><b>Mensaje de WhatsApp</b> al recibir un pedido del e-commerce</label>
+        <span class="hint">Si quieren un mensaje personalizado, escribirlo acá. Si no, usamos el formato por defecto (cliente + detalle del carrito + total).</span>
+        <textarea id="f_wa_mensaje" data-save placeholder="Dejar vacío para usar el formato por defecto"></textarea>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Operación de caja</h3>
+
+      <div class="field">
+        <label class="q"><b>¿Quién puede registrar ingresos / egresos manuales de caja?</b></label>
+        <div class="choices" data-radio="ie_quien">
+          <label><input type="radio" name="ie_quien" value="solo_dueno" data-save>
+            <span><span class="opt-title">Solo el dueño</span></span>
+          </label>
+          <label><input type="radio" name="ie_quien" value="dueno_encargado" data-save>
+            <span><span class="opt-title">Dueño y encargado</span></span>
+          </label>
+          <label><input type="radio" name="ie_quien" value="todos" data-save>
+            <span><span class="opt-title">También los cajeros</span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q"><b>Anulación de ventas de días anteriores</b></label>
+        <span class="hint">Hoy solo se pueden anular las ventas del mismo día.</span>
+        <div class="choices" data-radio="anular_dias">
+          <label><input type="radio" name="anular_dias" value="solo_dia" data-save>
+            <span><span class="opt-title">Mantenerlo así (solo ventas del día)</span></span>
+          </label>
+          <label><input type="radio" name="anular_dias" value="anteriores" data-save>
+            <span><span class="opt-title">Habilitar anular ventas de días anteriores (solo dueño/encargado)</span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_tope_cc"><b>Tope de crédito por cliente</b> en cuenta corriente</label>
+        <span class="hint">Si manejan CC. Si no, dejar vacío.</span>
+        <input type="text" id="f_tope_cc" data-save placeholder="Ej: $200.000  ó  sin tope" />
+      </div>
+
+      <div class="field">
+        <label class="q"><b>¿Quién puede aprobar a un cliente para cuenta corriente?</b></label>
+        <div class="choices" data-radio="aprueba_cc">
+          <label><input type="radio" name="aprueba_cc" value="solo_dueno" data-save>
+            <span><span class="opt-title">Solo el dueño</span></span>
+          </label>
+          <label><input type="radio" name="aprueba_cc" value="dueno_encargado" data-save>
+            <span><span class="opt-title">Dueño y encargado</span></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== P3 ============== -->
+  <section class="prio">
+    <div class="banner p3">
+      PRIORIDAD 3 · PUEDE ESPERAR
+      <span class="help">El sistema puede operar sin esto. Se va incorporando después del lanzamiento.</span>
+    </div>
+
+    <div class="group">
+      <h3>Identidad visual (logo)</h3>
+
+      <div class="field">
+        <label class="q"><b>¿Tienen un logo actual de #turisteando?</b></label>
+        <div class="choices" data-radio="tiene_logo">
+          <label><input type="radio" name="tiene_logo" value="si" data-save>
+            <span>
+              <span class="opt-title">Sí, ya tenemos logo</span>
+              <span class="opt-desc">Pasárnoslo en alta resolución (PNG o SVG con fondo transparente).</span>
+            </span>
+          </label>
+          <label><input type="radio" name="tiene_logo" value="no" data-save>
+            <span><span class="opt-title">No, no tenemos</span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="note">
+        Si no tienen logo, <b>se lo podemos armar nosotros</b>. Con las especificaciones
+        que nos pasen abajo (aunque sean mínimas) preparamos una propuesta simple. Si no
+        nos pasan nada, vamos por la opción más limpia: <i>"turisteando"</i> en tipografía
+        negra, sin íconos.
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_logo_aclaracion"><b>Especificaciones para el logo</b></label>
+        <span class="hint">Indicar:&nbsp;<b>color/es</b>,&nbsp;<b>tipografía</b> preferida y <b>algún diseño de referencia</b> que les guste (pueden pegar un link o el nombre de la marca).</span>
+        <textarea id="f_logo_aclaracion" data-save placeholder="Color/es:&#10;Tipografía:&#10;Referencia (link o marca):"></textarea>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Contenido del e-commerce</h3>
+
+      <div class="note">
+        Las <b>fotos de productos</b> las saca el cliente desde el depósito específico del
+        e-commerce y las sube al admin a su ritmo. Lo mismo con las <b>descripciones
+        largas</b> de cada producto. No hace falta tenerlo listo para lanzar.
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Política de devoluciones</h3>
+
+      <div class="field">
+        <label class="q"><b>Política propuesta</b>: solo <b>nota de crédito</b> contra futura compra, no se devuelve plata.</label>
+        <div class="choices" data-radio="devoluciones">
+          <label><input type="radio" name="devoluciones" value="confirmo" data-save>
+            <span><span class="opt-title">Confirmamos esta política</span></span>
+          </label>
+          <label><input type="radio" name="devoluciones" value="otra" data-save>
+            <span><span class="opt-title">Otra</span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q" for="f_devoluciones_detalle"><b>Aclaraciones o política propia</b></label>
+        <span class="hint">Si eligieron "Otra", describir acá cómo manejan las devoluciones. También sirve para anotar excepciones o casos puntuales aunque hayan confirmado la política propuesta.</span>
+        <textarea id="f_devoluciones_detalle" data-save placeholder="Describir libremente..."></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== Acciones finales ============== -->
+  <div class="actions-end">
+    <h2>Enviar respuestas</h2>
+    <p>Compartilas por WhatsApp, copialas al portapapeles o descargá el archivo .txt.</p>
+    <div class="btn-row">
+      <button type="button" class="btn primary" onclick="openExportModal()">📤 Enviar respuestas</button>
+      <button type="button" class="btn" onclick="window.print()">🖨 Imprimir</button>
+      <button type="button" class="btn danger" onclick="resetAll()">Reiniciar</button>
+    </div>
+  </div>
+
+  <footer>
+    Datos para el lanzamiento · #turisteando
+  </footer>
+</div>
+
+<!-- Modal de exportación -->
+<div class="modal-backdrop" id="exportModal" onclick="if(event.target===this) closeExportModal()">
+  <div class="modal-card">
+    <h3>Respuestas listas</h3>
+    <p class="modal-help">
+      Elegí cómo enviarlas. <b>Compartir</b> abre WhatsApp/Mail directo;
+      <b>Copiar</b> las pone en el portapapeles para pegarlas donde quieras;
+      <b>Descargar</b> baja un archivo .txt.
+    </p>
+    <textarea id="exportTextArea" readonly></textarea>
+    <div class="modal-actions">
+      <span class="copied-flash" id="copiedFlash">✓ copiado</span>
+      <button type="button" class="btn" id="shareBtn" onclick="shareExport()" style="display:none">📤 Compartir</button>
+      <button type="button" class="btn primary" onclick="copyExport()">📋 Copiar</button>
+      <button type="button" class="btn" onclick="downloadExport()">⬇ Descargar .txt</button>
+      <button type="button" class="btn" onclick="closeExportModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Si llegamos a correr JS, ocultar el banner de "abrir en navegador"
+  (function() {
+    var b = document.getElementById('openInBrowserBanner');
+    if (b) b.style.display = 'none';
+  })();
+
+  const STORAGE_KEY = 'turisteando-datos-v1';
+  const savedInd = document.getElementById('savedInd');
+
+  // Recolectar todos los inputs marcados con data-save
+  const inputs = document.querySelectorAll('[data-save]');
+
+  // Cargar estado guardado (con try/catch para navegadores que bloquean localStorage)
+  let saved = {};
+  try {
+    saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch (e) { saved = {}; }
+
+  inputs.forEach(el => {
+    if (el.type === 'radio') {
+      const key = el.name;
+      if (saved[key] === el.value) el.checked = true;
+    } else {
+      if (saved[el.id] !== undefined) el.value = saved[el.id];
+    }
+  });
+
+  function save() {
+    const state = {};
+    inputs.forEach(el => {
+      if (el.type === 'radio') {
+        if (el.checked) state[el.name] = el.value;
+      } else {
+        if (el.value) state[el.id] = el.value;
+      }
+    });
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) { /* localStorage bloqueado: igual la sesión actual funciona */ }
+    flashSaved();
+  }
+
+  let flashTimer;
+  function flashSaved() {
+    savedInd.classList.add('show');
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => savedInd.classList.remove('show'), 1200);
+  }
+
+  // Aplicar estado visual a radios (label.selected) y bloques condicionales
+  function refreshUI() {
+    // selected en radios
+    document.querySelectorAll('.choices').forEach(group => {
+      group.querySelectorAll('label').forEach(lab => lab.classList.remove('selected'));
+      const checked = group.querySelector('input[type="radio"]:checked');
+      if (checked) checked.closest('label').classList.add('selected');
+    });
+    // bloques condicionales
+    document.querySelectorAll('.conditional').forEach(block => {
+      const cond = block.getAttribute('data-show-when');
+      if (!cond) return;
+      const [name, vals] = cond.split('=');
+      const allowed = vals.split('|');
+      const checked = document.querySelector(`input[type="radio"][name="${name}"]:checked`);
+      const show = checked && allowed.includes(checked.value);
+      block.classList.toggle('show', !!show);
+    });
+  }
+
+  inputs.forEach(el => {
+    el.addEventListener('input', () => { save(); refreshUI(); });
+    el.addEventListener('change', () => { save(); refreshUI(); });
+  });
+
+  function resetAll() {
+    if (!confirm('¿Borrar todo lo cargado? Se perderá lo guardado.')) return;
+    inputs.forEach(el => {
+      if (el.type === 'radio') el.checked = false;
+      else el.value = '';
+    });
+    localStorage.removeItem(STORAGE_KEY);
+    refreshUI();
+  }
+
+  // ============================================
+  // Exportar respuestas
+  // ============================================
+  function getAnswerFor(label) {
+    const forId = label.getAttribute('for');
+    if (forId) {
+      const target = document.getElementById(forId);
+      const v = target && target.value ? target.value.trim() : '';
+      return v || '[ sin completar ]';
+    }
+    let next = label.nextElementSibling;
+    while (next && !next.matches('label.q, .conditional')) {
+      if (next.matches('.choices')) {
+        const checked = next.querySelector('input[type="radio"]:checked');
+        if (checked) {
+          const optTitle = checked.closest('label').querySelector('.opt-title');
+          return optTitle ? optTitle.textContent.trim() : checked.value;
+        }
+        return '[ sin seleccionar ]';
+      }
+      if (next.matches('input, textarea') && next.value && next.value.trim()) {
+        return next.value.trim();
+      }
+      next = next.nextElementSibling;
+    }
+    return '[ sin completar ]';
+  }
+
+  function cleanText(el) {
+    return el.textContent.replace(/\s+/g, ' ').trim();
+  }
+
+  function buildExportText() {
+    let out = 'DATOS PARA EL LANZAMIENTO · #turisteando\n';
+    out += '='.repeat(60) + '\n\n';
+
+    document.querySelectorAll('section.prio').forEach(section => {
+      const banner = section.querySelector('.banner');
+      const title = banner.firstChild.textContent.trim();
+      out += '\n' + title + '\n';
+      out += '='.repeat(Math.max(title.length, 20)) + '\n';
+
+      section.querySelectorAll('.group').forEach(group => {
+        const h3 = group.querySelector('h3');
+        if (h3) out += '\n--- ' + cleanText(h3) + ' ---\n\n';
+
+        group.querySelectorAll('label.q').forEach(label => {
+          const q = cleanText(label);
+          const a = getAnswerFor(label);
+          out += '• ' + q + '\n';
+          out += '   ' + a.split('\n').join('\n   ') + '\n\n';
+        });
+      });
+    });
+
+    out += '\n--- Generado: ' + new Date().toLocaleString('es-AR') + ' ---\n';
+    return out;
+  }
+
+  function openExportModal() {
+    const text = buildExportText();
+    document.getElementById('exportTextArea').value = text;
+    document.getElementById('exportModal').classList.add('open');
+    // Mostrar botón Compartir solo si está soportado
+    const shareBtn = document.getElementById('shareBtn');
+    shareBtn.style.display = (navigator.share) ? 'inline-block' : 'none';
+    // Bloquear scroll del body
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeExportModal() {
+    document.getElementById('exportModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function flashCopied() {
+    const el = document.getElementById('copiedFlash');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 1500);
+  }
+
+  async function copyExport() {
+    const ta = document.getElementById('exportTextArea');
+    const text = ta.value;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        ta.select();
+        document.execCommand('copy');
+      }
+      flashCopied();
+    } catch (e) {
+      // Último recurso: seleccionar para copia manual
+      ta.focus();
+      ta.select();
+      alert('No pudimos copiar automáticamente. El texto quedó seleccionado, hacé "Copiar" desde el menú.');
+    }
+  }
+
+  async function shareExport() {
+    const text = document.getElementById('exportTextArea').value;
+    try {
+      await navigator.share({
+        title: 'Datos para el lanzamiento · #turisteando',
+        text: text
+      });
+    } catch (e) {
+      // Usuario canceló o falló silenciosamente
+    }
+  }
+
+  function downloadExport() {
+    const text = document.getElementById('exportTextArea').value;
+    try {
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'turisteando-datos.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      alert('Tu navegador no permite descargar. Usá "Copiar" o "Compartir" en su lugar.');
+    }
+  }
+
+  // ESC para cerrar el modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeExportModal();
+  });
+
+  refreshUI();
+</script>
+</body>
+</html>

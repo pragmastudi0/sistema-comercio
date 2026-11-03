@@ -1,0 +1,38 @@
+/* ──────────────────────────────────────────────────────────────────
+   Overrides "estilo Office / sistema viejo" para los componentes Card
+   del admin. NO afecta al PoS porque este CSS solo se importa desde
+   apps/admin/src/app/layout.tsx.
+
+   Pintamos los <Card> con borde slate-300 + corner rounded chico +
+   shadow leve, similar al estilo del cuadro de productos. Los
+   <CardHeader> reciben un fondo gris claro como cabecera.
+   ────────────────────────────────────────────────────────────────── */
+
+/* Card principal */
+.rounded-lg.border.bg-card {
+  border-color: rgb(203 213 225) !important; /* slate-300 */
+  border-radius: 0.25rem !important;          /* rounded-sm */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+}
+
+/* Cabecera del Card: fondo gris claro + border-bottom + padding más bajo */
+.rounded-lg.border.bg-card > .flex.flex-col.space-y-1\.5.p-6 {
+  background-color: rgb(248 250 252); /* slate-50 */
+  border-bottom: 1px solid rgb(226 232 240); /* slate-200 */
+  padding: 0.5rem 0.75rem;
+}
+
+/* CardTitle dentro de la cabecera: tipografía más chica y compacta */
+.rounded-lg.border.bg-card .text-lg.font-semibold.leading-none.tracking-tight {
+  font-size: 0.75rem;       /* text-xs */
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(51 65 85);     /* slate-700 */
+  line-height: 1rem;
+}
+
+/* CardContent: padding más bajo */
+.rounded-lg.border.bg-card > .p-6.pt-0 {
+  padding: 0.75rem;
+}

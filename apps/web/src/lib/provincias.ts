@@ -1,0 +1,30 @@
+// 24 jurisdicciones de la República Argentina (23 provincias + CABA),
+// orden alfabético con CABA al inicio por ser la más frecuente.
+export const PROVINCIAS_AR = [
+  'Ciudad Autónoma de Buenos Aires',
+  'Buenos Aires',
+  'Catamarca',
+  'Chaco',
+  'Chubut',
+  'Córdoba',
+  'Corrientes',
+  'Entre Ríos',
+  'Formosa',
+  'Jujuy',
+  'La Pampa',
+  'La Rioja',
+  'Mendoza',
+  'Misiones',
+  'Neuquén',
+  'Río Negro',
+  'Salta',
+  'San Juan',
+  'San Luis',
+  'Santa Cruz',
+  'Santa Fe',
+  'Santiago del Estero',
+  'Tierra del Fuego',
+  'Tucumán',
+] as const;
+
+export type ProvinciaAr = (typeof PROVINCIAS_AR)[number];

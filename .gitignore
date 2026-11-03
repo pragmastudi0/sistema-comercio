@@ -1,0 +1,56 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# os
+.DS_Store
+Thumbs.db
+
+# test
+coverage/
+playwright-report/
+test-results/
+
+# misc
+*.local
+.vercel
+
+# materiales de cliente y trabajo local (no commitear)
+entrega-cliente/
+docs/cliente/
+*-backup_*.xlsx
+Presentacion-*.pdf
+Snapshot-*/
+pendientes.md
+
+# dumps / exports / credenciales locales (precios, backups)
+backups/
+*.xlsx
+!scripts/*.xlsx
+scripts/.env

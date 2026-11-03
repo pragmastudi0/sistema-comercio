@@ -1,0 +1,92 @@
+name: Backup diario de Supabase → GitHub
+
+on:
+  schedule:
+    # Todos los días a las 06:00 UTC (03:00 hora Argentina).
+    # Los locales están cerrados a esa hora, cero impacto en la operación.
+    - cron: '0 6 * * *'
+  # Botón manual desde Actions → Run workflow para test o backup
+  # on-demand antes de una migración crítica.
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Instalar postgresql-client-17 (matchea versión de Supabase)
+        run: |
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Correr backup y push al repo separado
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_REPO_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+          RETENTION: '30'
+        run: |
+          # bash estricto: fallar si alguna instrucción o pipeline falla,
+          # o si se usa una variable no definida. Sin esto pg_dump podría
+          # fallar silenciosamente y quedaría un dump vacío.
+          set -euo pipefail
+
+          # 1) pg_dump comprimido a /tmp.
+          # Usamos ruta absoluta al binario 17 porque Ubuntu 24.04 trae
+          # postgresql-client-16 preinstalado y su `pg_dump` gana en el
+          # PATH. Aunque instalemos el 17, `pg_dump` a secas sigue
+          # apuntando al 16 y falla con "server version mismatch"
+          # (Supabase corre Pg17).
+          PG_DUMP=/usr/lib/postgresql/17/bin/pg_dump
+          TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
+          FILENAME="turisteando_${TIMESTAMP}.sql.gz"
+          echo "[backup] Dumping base de datos (con $PG_DUMP)..."
+          "$PG_DUMP" "$SUPABASE_DB_URL" \
+            --no-owner --no-privileges --clean --if-exists \
+            | gzip -9 > "/tmp/${FILENAME}"
+
+          # 2) Sanity check: el dump tiene que pesar al menos 10KB.
+          # Si es más chico algo salió mal (BD vacía o pg_dump rot).
+          SIZE=$(stat -c%s "/tmp/${FILENAME}")
+          if [ "$SIZE" -lt 10240 ]; then
+            echo "[backup] ERROR: dump muy chico ($SIZE bytes). Abortando."
+            exit 1
+          fi
+          SIZE_HUMAN=$(numfmt --to=iec --suffix=B "$SIZE")
+          echo "[backup] Dump listo: ${FILENAME} (${SIZE_HUMAN})"
+
+          # 3) Clonar repo de backups (shallow para no bajar historia).
+          echo "[backup] Clonando repo de backups..."
+          git clone --depth 1 \
+            "https://x-access-token:${BACKUP_REPO_TOKEN}@github.com/pragmastudi0/turisteando-backups.git" \
+            /tmp/backup-repo
+          cd /tmp/backup-repo
+
+          # 4) Copiar el archivo nuevo al repo.
+          cp "/tmp/${FILENAME}" .
+
+          # 5) Rotación: mantener solo los últimos $RETENTION archivos.
+          # Ordenamos por nombre desc (funciona porque el TIMESTAMP en el
+          # nombre es lexicográficamente ordenable) y borramos los que
+          # sobran. `xargs -r` no ejecuta rm si el input está vacío.
+          echo "[backup] Aplicando retención de ${RETENTION} archivos..."
+          ls -1 turisteando_*.sql.gz 2>/dev/null | sort -r | tail -n +$((RETENTION + 1)) | xargs -r rm -f
+
+          # 6) Config git identity (necesario para commit dentro de GH Actions).
+          git config user.email "backup-bot@turisteando.local"
+          git config user.name "Backup Bot"
+
+          # 7) Commit + push. Si no hay cambios (raro pero posible en
+          # runs manuales seguidos) el commit falla — lo ignoramos.
+          git add -A
+          if git diff --staged --quiet; then
+            echo "[backup] Sin cambios que commitear (esto no debería pasar en cron)."
+          else
+            git commit -m "Backup ${TIMESTAMP}"
+            git push
+            echo "[backup] Push OK a turisteando-backups."
+          fi
+
+          echo "[backup] Terminado."
