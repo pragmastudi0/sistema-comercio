@@ -296,14 +296,9 @@ function VentasPageInner() {
     const e = empleadosQ.data?.find((x) => x.id === id);
     return e ? `${e.nombre} ${e.apellido}` : '—';
   };
-  // En la tabla y en el detalle solo queremos la sigla del local (ej.
-  // "B12", "C11") — el nombre completo en DB es "#Turisteando B12" pero
-  // ese prefijo es redundante porque el admin ya es de Turisteando.
-  // Sacamos el "#turisteando" del principio en cualquier capitalización.
+  // Nombre del local tal cual está en la DB.
   const localNombre = (id: string) => {
-    const nombre = localesQ.data?.find((l) => l.id === id)?.nombre;
-    if (!nombre) return '—';
-    return nombre.replace(/^#?\s*turisteando\s*/i, '').trim() || nombre;
+    return localesQ.data?.find((l) => l.id === id)?.nombre ?? '—';
   };
 
   return (

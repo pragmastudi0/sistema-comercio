@@ -1,31 +1,47 @@
-// Backdoor de acceso para el operador del SaaS (Pragma). NO es un rol
-// del cliente — es un fallback fijo por email para poder entrar a
-// corregir datos rotos (sesiones de caja con empleado/caja equivocados,
-// cajas que quedaron abiertas por olvido) sin depender de que el cliente
-// toque roles ni permisos.
+// Acceso del OPERADOR del SaaS (no es un rol del cliente). Whitelist por email
+// para entrar a corregir datos rotos (sesiones de caja con empleado/caja
+// equivocados, cajas abiertas por olvido) en cualquier empresa.
 //
-// La lista es HARDCODEADA a propósito: es más seguro que un rol editable,
-// porque nadie del cliente puede sumar mails acá sin abrir un PR. Si entra
-// otro dev del operador, sumar su email a la constante y deployar.
+// CERO HARDCODE: los emails salen de env var, nunca del código.
+//   NEXT_PUBLIC_SUPER_ADMIN_EMAILS / NEXT_PUBLIC_PRAGMA_DEV_EMAILS  → apps Next.js
+//   VITE_SUPER_ADMIN_EMAILS       / VITE_PRAGMA_DEV_EMAILS          → app Vite (setter)
+// Formato: lista separada por comas. Ej: "ops@agencia.com, dev@agencia.com".
 //
-// MULTI-EMPRESA: estos emails son del OPERADOR del SaaS (acceso cross-tenant).
-// El "dueño" de cada empresa NO va acá — su super-admin por-empresa se
-// resuelve por su rol/flag en la BD de su propia empresa (ver Fase 5 del plan).
-export const PRAGMA_DEV_EMAILS: readonly string[] = [
-  'pragmasolucionesdigitales@gmail.com',
-];
+// MULTI-EMPRESA: esto es acceso cross-tenant del operador. El "dueño" de cada
+// empresa NO va acá: su super-admin por-empresa se resuelve por su rol
+// (`preset_key = 'admin'`) en su propia empresa.
 
-/**
- * Super-admins del OPERADOR del SaaS. Tienen bypass total de permisos en el
- * admin — cualquier `puede(...)` devuelve true — para poder entrar a corregir
- * cualquier empresa. El super-admin por-empresa (dueño del cliente) se maneja
- * por rol en su propia empresa, no acá.
- *
- * NO se puede editar desde el cliente: cambios acá van por PR.
- */
-export const SUPER_ADMIN_EMAILS: readonly string[] = [
-  'pragmasolucionesdigitales@gmail.com',
-];
+declare const process: { env: Record<string, string | undefined> } | undefined;
+
+function parseLista(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function readNextEnv(key: string): string | undefined {
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key];
+  }
+  return undefined;
+}
+
+// Mutable para permitir el setter de Vite al boot. Se inicializa con lo que
+// haya en process.env (Next inlinea NEXT_PUBLIC_*; en Vite queda vacío hasta
+// que main.tsx llama setDevAccessEmails con import.meta.env).
+let superAdminEmails: string[] = parseLista(readNextEnv('NEXT_PUBLIC_SUPER_ADMIN_EMAILS'));
+let pragmaDevEmails: string[] = parseLista(readNextEnv('NEXT_PUBLIC_PRAGMA_DEV_EMAILS'));
+
+/** Setter para Vite (pos): llamar al arrancar con los valores de import.meta.env. */
+export function setDevAccessEmails(opts: {
+  superAdmin?: string;
+  pragmaDev?: string;
+}): void {
+  if (opts.superAdmin) superAdminEmails = parseLista(opts.superAdmin);
+  if (opts.pragmaDev) pragmaDevEmails = parseLista(opts.pragmaDev);
+}
 
 function emailEnLista(
   empleado: { email?: string } | null | undefined,
@@ -33,24 +49,15 @@ function emailEnLista(
 ): boolean {
   if (!empleado?.email) return false;
   const norm = empleado.email.trim().toLowerCase();
-  return lista.some((e) => e.toLowerCase() === norm);
+  return lista.some((e) => e === norm);
 }
 
-/**
- * true si el empleado logueado es un dev con acceso a las acciones de
- * corrección (editar sesión de caja, forzar cierre). Se matchea por
- * email exacto, case-insensitive. Devuelve false si el empleado es
- * null/undefined o si el email no está en la whitelist.
- */
+/** true si el empleado logueado es un dev del operador (correcciones de datos). */
 export function esPragmaDev(empleado: { email?: string } | null | undefined): boolean {
-  return emailEnLista(empleado, PRAGMA_DEV_EMAILS);
+  return emailEnLista(empleado, pragmaDevEmails);
 }
 
-/**
- * true si el empleado es super-admin (dueño o dev). En el hook de
- * permisos del admin, cualquier `puede(...)` devuelve true si esto es
- * true, sin importar el rol ni el override guardado en BD.
- */
+/** true si el empleado es super-admin del operador (bypass total de permisos). */
 export function esSuperAdmin(empleado: { email?: string } | null | undefined): boolean {
-  return emailEnLista(empleado, SUPER_ADMIN_EMAILS);
+  return emailEnLista(empleado, superAdminEmails);
 }

@@ -38,7 +38,8 @@ import { ImagenesProducto } from '@/components/imagenes-producto';
 import { InfoTip } from '@/components/info-tip';
 import { PaginaProtegida, usePermiso } from '@/lib/permisos';
 
-const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'https://turisteando-web.vercel.app';
+// Sin fallback hardcodeado: si no está la env var, se ocultan los links al sitio.
+const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? '';
 const PAGE_SIZE = 100;
 // Los productos importados desde Excel al arrancar quedaron con la lista
 // legacy 'lp_cf'; los nuevos usan el UUID. Buscamos por ambos para no
@@ -179,14 +180,16 @@ function WebPageInner() {
             Descuentos, escalas y publicación del catálogo web.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <a href={WEB_URL} target="_blank" rel="noreferrer">
-              <ExternalLink className="mr-1 h-3 w-3" />
-              Ver sitio público
-            </a>
-          </Button>
-        </div>
+        {WEB_URL && (
+          <div className="flex gap-2">
+            <Button asChild variant="outline" size="sm">
+              <a href={WEB_URL} target="_blank" rel="noreferrer">
+                <ExternalLink className="mr-1 h-3 w-3" />
+                Ver sitio público
+              </a>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Configuración mayorista global */}
@@ -927,7 +930,7 @@ function PanelDetalleWeb({
       {/* Footer sticky con guardar */}
       <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-3 py-2">
         <div className="flex items-center justify-between gap-2">
-          {producto.publicado_web && (
+          {producto.publicado_web && WEB_URL && (
             <Button asChild variant="ghost" size="sm" className="h-7 text-[11px]">
               <a
                 href={`${WEB_URL}/catalogo/${producto.id}`}

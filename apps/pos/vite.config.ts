@@ -1,19 +1,25 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'node:path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Branding del manifest PWA desde env (nada hardcodeado a un cliente).
+  const env = loadEnv(mode, process.cwd(), '');
+  const brand = (env.VITE_BRAND_NAME || 'Comercio').trim();
+  const themeColor = (env.VITE_THEME_COLOR || '#2563eb').trim();
+
+  return {
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png'],
       manifest: {
-        name: '#turisteando · PoS',
-        short_name: '#turisteando',
+        name: `${brand} · PoS`,
+        short_name: brand,
         description: 'Punto de venta',
-        theme_color: '#E93BA1',
+        theme_color: themeColor,
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
@@ -60,5 +66,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: { port: 3100 },
+    server: { port: 3100 },
+  };
 });

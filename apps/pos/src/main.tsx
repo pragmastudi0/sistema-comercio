@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
-import { setBrandName } from '@comercio/business';
+import { setBrandName, setDevAccessEmails } from '@comercio/business';
 import App from './App';
 import '@comercio/ui/styles';
 
@@ -13,20 +13,23 @@ import '@comercio/ui/styles';
 const brandEnv = (import.meta.env.VITE_BRAND_NAME ?? '').trim();
 if (brandEnv) setBrandName(brandEnv);
 
+// Título de la pestaña desde el branding (nada hardcodeado en index.html).
+if (typeof document !== 'undefined') {
+  document.title = `${brandEnv || 'Comercio'} · PoS`;
+}
+
+// Emails del operador del SaaS (bypass de permisos) desde env de Vite.
+setDevAccessEmails({
+  superAdmin: import.meta.env.VITE_SUPER_ADMIN_EMAILS,
+  pragmaDev: import.meta.env.VITE_PRAGMA_DEV_EMAILS,
+});
+
 // Tamaño de fuente base del PoS un poco más grande que el default web.
 // Pedido del cliente: hay cajeros con visión cansada y el sistema se usa
 // muchas horas seguidas. Aumentamos a 17px (default web es 16px); como
 // Tailwind usa rem, todo el árbol escala parejo.
 if (typeof document !== 'undefined') {
   document.documentElement.style.fontSize = '17px';
-}
-
-// === Limpieza de assets de versiones anteriores ===
-// Borrar localStorage de la vesión v1 (que tenía residuo del modo mock).
-try {
-  localStorage.removeItem('turisteando-pos-sesion');
-} catch {
-  /* navegador con storage bloqueado */
 }
 
 // === Auto-update de la PWA ===

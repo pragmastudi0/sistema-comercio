@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Empleado } from '@comercio/db';
+import { storageKey } from '@/lib/storage';
 
 type SesionState = {
   empleado: Empleado | null;
@@ -18,7 +19,7 @@ export const useSesion = create<SesionState>()(
       logout: () => set({ empleado: null }),
     }),
     {
-      name: 'turisteando-admin-sesion',
+      name: storageKey('admin-sesion'),
       partialize: (s) => ({ empleado: s.empleado }),
     },
   ),

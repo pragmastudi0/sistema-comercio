@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Caja, Empleado, SesionCaja } from '@comercio/db';
+import { storageKey } from '../lib/storage';
 
 type SesionState = {
   empleado: Empleado | null;
@@ -26,7 +27,7 @@ export const useSesion = create<SesionState>()(
     {
       // v2: invalidación masiva de sesiones cacheadas del modo mock con IDs no-UUID.
       // Cambiar el sufijo de versión cuando haga falta volver a limpiar.
-      name: 'turisteando-pos-sesion-v2',
+      name: storageKey('pos-sesion-v2'),
       partialize: (s) => ({ empleado: s.empleado, caja: s.caja, sesionCaja: s.sesionCaja }),
     },
   ),

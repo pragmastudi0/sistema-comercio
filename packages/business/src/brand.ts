@@ -1,12 +1,13 @@
-// Branding del comercio. Carpetas y DB siguen llamándose "comercio";
-// el nombre visible se decide acá.
+// Branding del producto a nivel "chrome" (título de pestaña, header del shell,
+// fallbacks). El nombre REAL del comercio de cada empresa sale de la DB
+// (`configuracion_empresa.comercio.razon_social`); esto es solo el default de
+// la instancia cuando todavía no hay empresa resuelta.
 //
-// El nombre se puede sobreescribir vía env var sin tocar código, útil para
-// armar instancias demo / multi-tenant:
+// Se setea por env var (nunca hardcodeado a un cliente):
 //   NEXT_PUBLIC_BRAND_NAME   → apps Next.js (admin, web)
 //   VITE_BRAND_NAME          → app Vite (pos); usar setBrandName() desde main
 //
-// Si no hay env, queda el default "#turisteando".
+// Si no hay env, queda un default genérico.
 
 // Acceso defensivo a process.env: declare local para no depender de @types/node
 // en este package (que también se importa desde apps Vite).
@@ -21,7 +22,7 @@ function readNextBrand(): string | undefined {
   return undefined;
 }
 
-const inicial = readNextBrand() ?? '#turisteando';
+const inicial = readNextBrand() ?? 'Comercio';
 
 export const BRAND = {
   nombreCorto: inicial,

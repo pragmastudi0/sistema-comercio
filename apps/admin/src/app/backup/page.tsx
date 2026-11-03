@@ -9,6 +9,12 @@ import { toast } from 'sonner';
 import { useSesion } from '@/stores/sesion';
 import { getDb } from '@/lib/db';
 import { PRESET_IDS } from '@comercio/db';
+import { BRAND } from '@comercio/business';
+
+// Slug neutro para nombres de archivo, derivado del branding (sin hardcode).
+const BRAND_SLUG =
+  BRAND.nombreCorto.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') ||
+  'comercio';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@comercio/ui/card';
 import { Button } from '@comercio/ui/button';
 import { Input } from '@comercio/ui/input';
@@ -320,7 +326,7 @@ function BackupPageInner() {
       }));
 
       const resumenRows = [
-        { Concepto: '#Turisteando — Backup transaccional', Valor: '' },
+        { Concepto: `${BRAND.nombreCorto} — Backup transaccional`, Valor: '' },
         { Concepto: 'Rango', Valor: `${desde} → ${hasta}` },
         { Concepto: 'Generado', Valor: new Date().toLocaleString('es-AR') },
         {
@@ -420,7 +426,7 @@ function BackupPageInner() {
         // (URL pública), informando progreso.
         setProgreso('Descargando imágenes…');
         const zip = new JSZip();
-        zip.file(`turisteando-backup_${desde}_${hasta}.xlsx`, xlsxBlob);
+        zip.file(`${BRAND_SLUG}-backup_${desde}_${hasta}.xlsx`, xlsxBlob);
         const imgsFolder = zip.folder('imagenes')!;
 
         // Para no saturar: solo productos ACTIVOS. Si bajáramos los borrados
@@ -469,14 +475,14 @@ function BackupPageInner() {
 
         // Sumamos un README.txt con resumen y errores.
         const readme = [
-          'TURISTEANDO — BACKUP COMPLETO',
+          `${BRAND.nombreCorto.toUpperCase()} — BACKUP COMPLETO`,
           '================================',
           '',
           `Generado: ${new Date().toLocaleString('es-AR')}`,
           `Rango de datos: ${desde} → ${hasta}`,
           '',
           'CONTENIDO',
-          `· turisteando-backup_${desde}_${hasta}.xlsx — todas las operaciones del rango`,
+          `· ${BRAND_SLUG}-backup_${desde}_${hasta}.xlsx — todas las operaciones del rango`,
           `· imagenes/ — fotos de productos activos`,
           '',
           'IMÁGENES',
@@ -498,14 +504,14 @@ function BackupPageInner() {
           compression: 'DEFLATE',
           compressionOptions: { level: 6 },
         });
-        downloadName = `turisteando-backup-completo_${desde}_${hasta}.zip`;
+        downloadName = `${BRAND_SLUG}-backup-completo_${desde}_${hasta}.zip`;
 
         toast.success(
           `Backup completo · ${ventas.length} ventas + ${descargadas} imágenes`,
         );
       } else {
         downloadBlob = xlsxBlob;
-        downloadName = `turisteando-backup_${desde}_${hasta}.xlsx`;
+        downloadName = `${BRAND_SLUG}-backup_${desde}_${hasta}.xlsx`;
         toast.success(
           `Backup generado · ${ventas.length} ventas, ${sesiones.length} sesiones`,
         );
