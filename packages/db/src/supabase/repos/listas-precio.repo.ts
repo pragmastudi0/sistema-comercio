@@ -35,6 +35,16 @@ export function makeListasPrecioRepo(sb: SupabaseClient): ListasPrecioRepo {
       if (error) throw new Error(`listas_precio.get: ${error.message}`);
       return data ? fromDb(data as DbRow) : null;
     },
+    async listaDefaultDe(empresaId) {
+      const { data, error } = await sb
+        .from('listas_precio')
+        .select('*')
+        .eq('empresa_id', empresaId)
+        .eq('es_default', true)
+        .maybeSingle();
+      if (error) throw new Error(`listas_precio.listaDefaultDe: ${error.message}`);
+      return data ? fromDb(data as DbRow) : null;
+    },
     async create(input) {
       const { data, error } = await sb
         .from('listas_precio')

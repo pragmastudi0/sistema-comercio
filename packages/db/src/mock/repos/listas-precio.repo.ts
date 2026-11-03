@@ -12,6 +12,11 @@ export function makeListasPrecioRepo(store: Store): ListasPrecioRepo {
       const l = store.listasPrecio.find((x) => x.id === id);
       return l ? clone(l) : null;
     },
+    async listaDefaultDe(_empresaId) {
+      // Mock single-empresa: la lista default es la marcada con default=true.
+      const l = store.listasPrecio.find((x) => x.default);
+      return l ? clone(l) : null;
+    },
     async create(input) {
       const l: ListaPrecio = { ...input, id: makeId('lp') };
       store.listasPrecio.push(l);

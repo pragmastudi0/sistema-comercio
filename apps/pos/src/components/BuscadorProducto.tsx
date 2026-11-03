@@ -173,12 +173,10 @@ export function BuscadorProducto() {
             local += cant;
           } else if (cant > 0) {
             otros += cant;
-            // Sacamos prefijo "#Turisteando" y deduplicamos. Si no
-            // pudimos resolver el nombre, omitimos (no agregamos
-            // "otro depósito" para no ensuciar el mensaje).
-            const raw = nombrePorDep.get(it.deposito_id);
-            if (!raw) continue;
-            const n = raw.replace(/^#?\s*turisteando\s*/i, '').trim() || raw;
+            // Nombre del depósito tal cual. Si no pudimos resolverlo,
+            // omitimos (no agregamos "otro depósito" para no ensuciar el mensaje).
+            const n = nombrePorDep.get(it.deposito_id);
+            if (!n) continue;
             if (!otrosNombres.includes(n)) otrosNombres.push(n);
           }
         }
@@ -213,10 +211,10 @@ export function BuscadorProducto() {
       else if (cant > 0) otrosPorDep.set(it.deposito_id, cant);
     }
     const cantEnCarrito = yaEnCarrito(p.id);
-    // Política Turisteando: permitir vender SIEMPRE, aunque el stock
-    // quede negativo. Si tu depósito tiene cualquier valor (incluso 0
-    // o negativo), vendés desde acá. Solo sugerimos cross-depósito
-    // como warning cuando hay stock positivo en otro lado.
+    // Política de stock negativo (configurable por empresa, default ON):
+    // permitir vender aunque el stock quede negativo. Si tu depósito tiene
+    // cualquier valor (incluso 0 o negativo), vendés desde acá. Solo
+    // sugerimos cross-depósito como warning cuando hay stock positivo en otro lado.
     if (local > 0 && local - cantEnCarrito > 0) {
       return { ok: true, crossDeposito: false, nombresOtros: [] };
     }
@@ -230,13 +228,12 @@ export function BuscadorProducto() {
     const depositos =
       depositosQ.data ?? (await db.depositos.list().catch(() => []));
     const nombrePorDep = new Map(depositos.map((d) => [d.id, d.nombre]));
-    // Resolvemos nombres reales (B12/C11/Central, sin "#Turisteando"),
-    // deduplicando y descartando los que no pudimos resolver.
+    // Nombres de depósito tal cual, deduplicando y descartando los que no
+    // pudimos resolver.
     const nombresOtros: string[] = [];
     for (const id of otrosPorDep.keys()) {
-      const raw = nombrePorDep.get(id);
-      if (!raw) continue;
-      const n = raw.replace(/^#?\s*turisteando\s*/i, '').trim() || raw;
+      const n = nombrePorDep.get(id);
+      if (!n) continue;
       if (!nombresOtros.includes(n)) nombresOtros.push(n);
     }
     return { ok: true, crossDeposito: true, nombresOtros };

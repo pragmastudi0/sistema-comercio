@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Producto } from '@comercio/db';
+import { storageKey } from '../lib/storage';
 
 export type ItemCarritoWeb = {
   productoId: string;
@@ -73,7 +74,7 @@ export const useCarrito = create<CarritoState>()(
         set((s) => ({ items: s.items.filter((i) => i.productoId !== productoId) })),
       vaciar: () => set({ items: [] }),
     }),
-    { name: 'turisteando-web-carrito' },
+    { name: storageKey('web-carrito') },
   ),
 );
 

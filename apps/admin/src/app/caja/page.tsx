@@ -971,8 +971,9 @@ function DetalleSesion({
           {/* Sacamos "Movimientos en efectivo: +XXX" por pedido de Agus —
               aparecía con el `+` justo debajo del saldo inicial y daba la
               impresión visual de que el sistema sumaba el cobrado al
-              inicial. En Turisteando el dueño retira el efectivo cobrado
-              durante el turno y el cajero deja SOLO el saldo inicial. El
+              inicial. Con la política "retiro de efectivo al cierre", el dueño
+              retira el efectivo cobrado durante el turno y el cajero deja SOLO
+              el saldo inicial. El
               arqueo compara declarado vs saldo_inicial, nada más. Si hace
               falta ver cuánto se cobró en efectivo, ya está arriba en
               "Cobrado por método > Efectivo". */}

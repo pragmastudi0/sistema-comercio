@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { calcularPrecioMayorista } from '@comercio/business';
+import { BRAND, calcularPrecioMayorista } from '@comercio/business';
 import type { EscalaMayorista, Producto } from '@comercio/db';
 
 export type ProductoParaPdf = Producto & { precio_cf?: number };
@@ -95,7 +95,7 @@ export function generarCatalogoPdf({
   }).format(new Date());
   doc.setTextColor(120);
   doc.text(
-    `${empresa?.nombre ?? 'Turisteando'} — actualizado ${fecha}`,
+    `${empresa?.nombre ?? BRAND.nombreCorto} — actualizado ${fecha}`,
     margenLateral,
     68,
   );

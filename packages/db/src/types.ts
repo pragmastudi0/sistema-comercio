@@ -9,10 +9,14 @@ export type ISODate = string;
 export type Empresa = {
   id: ID;
   nombre: string;
+  /** Subdominio de la tienda web pública: <subdominio>.<ROOT_DOMAIN>.
+   *  La web resuelve el tenant por acá. Único por empresa. */
+  subdominio?: string | null;
   cuit?: string;
   direccion?: string;
   telefono?: string;
   email?: string;
+  activa?: boolean;
 };
 
 export type Local = {
@@ -20,6 +24,8 @@ export type Local = {
   empresa_id: ID;
   nombre: string;
   direccion?: string;
+  /** Prefijo de numeración de comprobantes de este punto de venta (ej. '0001'). */
+  numeracion_prefijo?: string;
   activo: boolean;
 };
 
@@ -36,15 +42,25 @@ export type Deposito = {
 
 export type Caja = {
   id: ID;
+  empresa_id?: ID;
   local_id: ID;
   nombre: string;
   activa: boolean;
 };
 
+/** Clave estable de un rol preset. Reemplaza la identificación por UUID fijo
+ *  (que no sirve en multi-empresa, donde cada empresa tiene sus propios roles).
+ *  Los permisos de los presets los define `@comercio/business`; `preset_key`
+ *  es lo que la RLS y `usePermisos` usan para reconocer el rol. */
+export type PresetKey = 'admin' | 'encargado' | 'cajero' | 'catalogo';
+
 export type Rol = {
   id: ID;
+  empresa_id?: ID;
   nombre: string;
   preset: boolean; // si es un rol de sistema (Admin/Encargado/Cajero/Catálogo)
+  /** Clave del preset si es uno de los 4 de sistema; null/undefined para roles custom. */
+  preset_key?: PresetKey | null;
   permisos: PermisosConfig;
 };
 

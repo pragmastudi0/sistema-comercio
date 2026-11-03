@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
+import { BRAND } from '@comercio/business';
 import { Providers } from './providers';
 import { AdminShell } from '@/components/admin-shell';
 import '@comercio/ui/styles';
 import './office-style.css';
 
 export const metadata: Metadata = {
-  title: '#turisteando · Admin',
+  title: `${BRAND.nombreCorto} · Admin`,
   description: 'Panel de administración',
 };
 

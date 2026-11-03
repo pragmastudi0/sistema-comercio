@@ -191,22 +191,26 @@ export function Caja() {
                 acceso a /admin, se los kickea al login con toast).
                 Catálogo tampoco (no es un rol que trabaje en el PoS). */}
             {(empleado.rol_id === PRESET_IDS.roles.admin ||
-              empleado.rol_id === PRESET_IDS.roles.encargado) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  const url =
-                    import.meta.env.VITE_ADMIN_URL ??
-                    'https://turisteando-admin.vercel.app';
-                  window.open(url, '_blank', 'noopener');
-                }}
-                title="Abrir el panel de administración en una pestaña nueva"
-              >
-                <Settings className="mr-1 h-3 w-3" />
-                Admin
-              </Button>
-            )}
+              empleado.rol_id === PRESET_IDS.roles.encargado) &&
+              import.meta.env.VITE_ADMIN_URL && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    // Sin fallback hardcodeado: si no hay VITE_ADMIN_URL el
+                    // botón no se muestra (nunca apuntar a otra instancia).
+                    window.open(
+                      import.meta.env.VITE_ADMIN_URL,
+                      '_blank',
+                      'noopener',
+                    );
+                  }}
+                  title="Abrir el panel de administración en una pestaña nueva"
+                >
+                  <Settings className="mr-1 h-3 w-3" />
+                  Admin
+                </Button>
+              )}
             {/* Cerrar caja directo — atajo visible para el arqueo
                 (el flujo más común). Los cajeros no encontraban esta
                 acción cuando estaba escondida detrás del modal Salir. */}

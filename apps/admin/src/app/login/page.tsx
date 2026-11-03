@@ -97,7 +97,7 @@ export default function LoginPage() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@turisteando.local"
+                placeholder="tu@email.com"
                 required
               />
             </div>

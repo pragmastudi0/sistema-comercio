@@ -30,6 +30,7 @@ import { PRESET_IDS } from '@comercio/db';
 import { cn } from '@comercio/ui/utils';
 import { Button } from '@comercio/ui/button';
 
+import { BRAND } from '@comercio/business';
 import type { AccionPermiso, ModuloPermiso } from '@comercio/business';
 import { usePermisos } from '@/lib/permisos';
 
@@ -112,9 +113,9 @@ type ToolbarAction =
   | { type: 'modal'; key: 'saldos' | 'ganancias'; label: string; icon: typeof Home; color: string; requiere?: { modulo: ModuloPermiso; accion: string } }
   | { type: 'link'; href: string; label: string; icon: typeof Home; color: string; external?: boolean; requiere?: { modulo: ModuloPermiso; accion: string }; badge?: 'pedidosPendientes' };
 
-// URL del PoS — se abre en pestaña nueva desde el botón Cobrar. Si no se
-// define la env var, fallback al deployment de Vercel del cliente.
-const POS_URL = process.env.NEXT_PUBLIC_POS_URL ?? 'https://turisteando-pos.vercel.app';
+// URL del PoS — se abre en pestaña nueva desde el botón Cobrar. Sin fallback
+// hardcodeado: si no está la env var, el botón "Cobrar" no se muestra.
+const POS_URL = process.env.NEXT_PUBLIC_POS_URL ?? '';
 
 const TOOLBAR: ToolbarAction[] = [
   { type: 'modal', key: 'saldos', label: 'Saldos de cajas', icon: Wallet, color: 'bg-emerald-100 text-emerald-700', requiere: req('caja', 'ver_otras_del_local') },
@@ -138,7 +139,9 @@ const TOOLBAR: ToolbarAction[] = [
   // fragment (que no llega al servidor) y el PoS los aplica al boot.
   // Sin permiso requerido: lo ven todos los roles que pueden entrar
   // al admin (cajeros ya están bloqueados arriba).
-  { type: 'link', href: POS_URL, label: 'Cobrar', icon: CreditCard, color: 'bg-rose-100 text-rose-700', external: true },
+  ...(POS_URL
+    ? [{ type: 'link', href: POS_URL, label: 'Cobrar', icon: CreditCard, color: 'bg-rose-100 text-rose-700', external: true } as ToolbarAction]
+    : []),
   // Ecommerce → publicación de productos, fotos, descripciones. Antes
   // estaba en el dropdown "Sistema" pero Agus lo toca seguido; acá al
   // lado de Cobrar queda accesible de un click.
@@ -288,7 +291,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             gradiente azul oscuro institucional, borde inferior marcado. */}
         <div className="flex h-9 items-center justify-between border-b border-slate-900 bg-gradient-to-b from-slate-700 to-slate-800 px-3 text-slate-50 shadow-sm">
           <Link href="/" className="flex items-center gap-1.5 text-sm font-semibold tracking-tight">
-            <span className="hidden sm:inline">Turisteando</span>
+            <span className="hidden sm:inline">{BRAND.nombreCorto}</span>
             <span className="text-slate-400">·</span>
             <span>Administración</span>
           </Link>

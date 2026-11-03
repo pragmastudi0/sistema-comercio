@@ -1,5 +1,6 @@
 import type { DbClient } from '../client';
 import { buildSeed } from './seed';
+import { makeEmpresasRepo } from './repos/empresas.repo';
 import { makeProductosRepo } from './repos/productos.repo';
 import { makeCategoriasRepo } from './repos/categorias.repo';
 import { makeProveedoresRepo } from './repos/proveedores.repo';
@@ -27,6 +28,7 @@ import { makePedidosWebRepo } from './repos/pedidos-web.repo';
 export function createMockClient(): DbClient {
   const store = buildSeed();
   return {
+    empresas: makeEmpresasRepo(store),
     productos: makeProductosRepo(store),
     categorias: makeCategoriasRepo(store),
     proveedores: makeProveedoresRepo(store),

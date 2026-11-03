@@ -1,3 +1,4 @@
+export * from './empresas.repo';
 export * from './productos.repo';
 export * from './categorias.repo';
 export * from './proveedores.repo';

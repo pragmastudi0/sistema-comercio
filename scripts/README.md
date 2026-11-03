@@ -23,16 +23,11 @@ Utilidades de operación y datos. No forman parte del build. Credenciales via `s
 > Pendiente (Fase 5): `provisionar-empresa` — alta de una empresa nueva (empresa +
 > configuración + roles preset + listas + depósito central + primer admin + subdominio).
 
-## Migraciones SQL (pendientes de consolidar)
+## Migraciones SQL
 
-⚠️ Estas migraciones se aplicaron a mano en el SQL Editor del sistema original y **todavía no
-están incorporadas** a `supabase/migrations/`. La **Fase 1** del plan las consolida en una
-secuencia numerada. Ver [`../docs/SCHEMA.md`](../docs/SCHEMA.md).
-
-`migrations-iteracion-{1,5,7,10,11}.sql`, `migrations-categoria-nullable.sql`,
-`migrations-proveedor-nullable.sql`, `migrations-stock-atomico.sql`,
-`migrations-mayorista-descuento.sql`, `migrations-mayorista-desde-monto.sql`,
-`migrations-pedidos-web.sql`.
+✅ **Consolidadas.** Todo el esquema vive en `supabase/migrations/` (set `0001`–`0004`,
+multi-empresa, aplica de cero). Ya no hay migraciones sueltas acá. Ver
+[`../docs/SCHEMA.md`](../docs/SCHEMA.md).
 
 ## Deploy
 

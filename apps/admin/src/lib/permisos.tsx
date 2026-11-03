@@ -12,17 +12,8 @@ import {
   type ModuloPermiso,
   type RolPreset,
 } from '@comercio/business';
-import { PRESET_IDS } from '@comercio/db';
 import { getDb } from '@/lib/db';
 import { useSesion } from '@/stores/sesion';
-
-// Mapeo de IDs de rol preset a su key en PERMISOS_PRESET.
-const ROL_PRESET_POR_ID: Record<string, RolPreset> = {
-  [PRESET_IDS.roles.admin]: 'admin',
-  [PRESET_IDS.roles.encargado]: 'encargado',
-  [PRESET_IDS.roles.cajero]: 'cajero',
-  [PRESET_IDS.roles.catalogo]: 'catalogo',
-};
 
 /**
  * Devuelve la matriz efectiva de permisos del empleado logueado:
@@ -51,7 +42,9 @@ export function usePermisos() {
   //   esos campos desde /admin/roles para encargado/catálogo sin perder
   //   el resto del preset hardcoded. Es la única finura editable de los
   //   roles preset; lo demás sigue mandando el código.
-  const presetKey = empleado?.rol_id ? ROL_PRESET_POR_ID[empleado.rol_id] : undefined;
+  // El preset se identifica por `preset_key` del rol (multi-empresa: cada
+  // empresa tiene sus propios UUIDs de rol, pero el preset_key es estable).
+  const presetKey = (rolQ.data?.preset_key ?? undefined) as RolPreset | undefined;
   const preset = presetKey ? PERMISOS_PRESET[presetKey] : undefined;
   const bdProductos = rolQ.data?.permisos?.productos;
   const overridesVisibilidad: Record<string, boolean> = {};

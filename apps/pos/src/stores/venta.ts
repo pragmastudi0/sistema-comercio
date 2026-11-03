@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { subtotalComboXPrecio, unidadesCobradasNxM } from '@comercio/business';
 import type { Producto } from '@comercio/db';
+import { storageKey } from '../lib/storage';
 
 /** Precio mínimo permitido por línea. Evita ventas accidentales a $0 o
  * con número negativo (un cero de más en el input editable). */
@@ -414,7 +415,7 @@ export const useVenta = create<VentaState>()(
       // navegador (corte de luz, recarga accidental, redeploy de Vercel)
       // el cajero recupere lo que estaba armando. No persistimos la
       // sesión Supabase ni los productos completos: solo lo del carrito.
-      name: 'turisteando-pos-carrito',
+      name: storageKey('pos-carrito'),
       // v3: agregamos persistencia de carritos paralelos para soportar
       // varias ventas a la vez (la cajera puede recargar el navegador
       // sin perder los carritos abiertos). El descuento global sigue

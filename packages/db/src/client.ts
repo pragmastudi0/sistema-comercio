@@ -18,6 +18,7 @@ import type {
   ConfiguracionRepo,
   AuditoriaRepo,
   PedidosWebRepo,
+  EmpresasRepo,
 } from './repos';
 
 /**
@@ -26,6 +27,7 @@ import type {
  * Día 4+: implementada contra Supabase. La UI no cambia.
  */
 export type DbClient = {
+  empresas: EmpresasRepo;
   productos: ProductosRepo;
   categorias: CategoriasRepo;
   proveedores: ProveedoresRepo;
