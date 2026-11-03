@@ -116,6 +116,8 @@ export function buildSeed(): Store {
     empresa: {
       id: EMPRESA_ID,
       nombre: 'Comercio Demo',
+      subdominio: 'demo',
+      activa: true,
     },
     locales: [
       { id: 'loc_1', empresa_id: EMPRESA_ID, nombre: 'Sucursal Centro', activo: true },
@@ -133,10 +135,10 @@ export function buildSeed(): Store {
       { id: 'caja_2a', local_id: 'loc_2', nombre: 'Caja 1', activa: true },
     ],
     roles: [
-      { id: 'rol_admin', nombre: 'Admin', preset: true, permisos: PERMISOS_PRESET.admin },
-      { id: 'rol_encargado', nombre: 'Encargado', preset: true, permisos: PERMISOS_PRESET.encargado },
-      { id: 'rol_cajero', nombre: 'Cajero', preset: true, permisos: PERMISOS_PRESET.cajero },
-      { id: 'rol_catalogo', nombre: 'Carga de catálogo', preset: true, permisos: PERMISOS_PRESET.catalogo },
+      { id: 'rol_admin', nombre: 'Admin', preset: true, preset_key: 'admin', permisos: PERMISOS_PRESET.admin },
+      { id: 'rol_encargado', nombre: 'Encargado', preset: true, preset_key: 'encargado', permisos: PERMISOS_PRESET.encargado },
+      { id: 'rol_cajero', nombre: 'Cajero', preset: true, preset_key: 'cajero', permisos: PERMISOS_PRESET.cajero },
+      { id: 'rol_catalogo', nombre: 'Carga de catálogo', preset: true, preset_key: 'catalogo', permisos: PERMISOS_PRESET.catalogo },
     ],
     empleados: [
       {

@@ -1,5 +1,6 @@
 import type { DbClient } from '../client';
 import { createSupabaseRaw, type SupabaseClient } from './client';
+import { makeEmpresasRepo } from './repos/empresas.repo';
 import { makeProductosRepo } from './repos/productos.repo';
 import { makeCategoriasRepo } from './repos/categorias.repo';
 import { makeProveedoresRepo } from './repos/proveedores.repo';
@@ -31,6 +32,7 @@ export function createSupabaseClient(url: string, anonKey: string): DbClient {
 /** Igual pero recibe un SupabaseClient ya construido (útil para tests). */
 export function wrapSupabase(sb: SupabaseClient): DbClient {
   return {
+    empresas: makeEmpresasRepo(sb),
     productos: makeProductosRepo(sb),
     categorias: makeCategoriasRepo(sb),
     proveedores: makeProveedoresRepo(sb),
