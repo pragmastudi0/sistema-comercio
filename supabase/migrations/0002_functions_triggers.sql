@@ -4,50 +4,53 @@
 -- Todas las operaciones atómicas (venta, nota de crédito, stock, pedido web)
 -- derivan la empresa del empleado logueado (`empresa_actual_id()`) o la reciben
 -- explícita (flujo anon de la web). La numeración es POR empresa.
+-- Todo vive bajo el schema `sistema_comercio` (ver 0001_schema.sql).
 -- ===========================================================================
+
+set search_path = sistema_comercio, public;
 
 -- ============== HELPERS DE CONTEXTO (resuelven desde auth.uid()) ==============
 
-create or replace function public.empleado_actual_id()
-returns uuid language sql security definer stable set search_path = public as $$
+create or replace function sistema_comercio.empleado_actual_id()
+returns uuid language sql security definer stable set search_path = sistema_comercio, public as $$
   select id from empleados where auth_user_id = auth.uid() and activo = true limit 1;
 $$;
 
-create or replace function public.empresa_actual_id()
-returns uuid language sql security definer stable set search_path = public as $$
+create or replace function sistema_comercio.empresa_actual_id()
+returns uuid language sql security definer stable set search_path = sistema_comercio, public as $$
   select empresa_id from empleados where auth_user_id = auth.uid() and activo = true limit 1;
 $$;
 
-create or replace function public.preset_key_actual()
-returns text language sql security definer stable set search_path = public as $$
+create or replace function sistema_comercio.preset_key_actual()
+returns text language sql security definer stable set search_path = sistema_comercio, public as $$
   select r.preset_key
     from empleados e join roles r on r.id = e.rol_id
    where e.auth_user_id = auth.uid() and e.activo = true
    limit 1;
 $$;
 
-create or replace function public.is_admin()
-returns boolean language sql security definer stable set search_path = public as $$
-  select coalesce(public.preset_key_actual() = 'admin', false);
+create or replace function sistema_comercio.is_admin()
+returns boolean language sql security definer stable set search_path = sistema_comercio, public as $$
+  select coalesce(sistema_comercio.preset_key_actual() = 'admin', false);
 $$;
 
-create or replace function public.is_admin_or_encargado()
-returns boolean language sql security definer stable set search_path = public as $$
-  select coalesce(public.preset_key_actual() in ('admin','encargado'), false);
+create or replace function sistema_comercio.is_admin_or_encargado()
+returns boolean language sql security definer stable set search_path = sistema_comercio, public as $$
+  select coalesce(sistema_comercio.preset_key_actual() in ('admin','encargado'), false);
 $$;
 
-grant execute on function public.empleado_actual_id() to authenticated;
-grant execute on function public.empresa_actual_id() to authenticated;
-grant execute on function public.preset_key_actual() to authenticated;
-grant execute on function public.is_admin() to authenticated;
-grant execute on function public.is_admin_or_encargado() to authenticated;
+grant execute on function sistema_comercio.empleado_actual_id() to authenticated;
+grant execute on function sistema_comercio.empresa_actual_id() to authenticated;
+grant execute on function sistema_comercio.preset_key_actual() to authenticated;
+grant execute on function sistema_comercio.is_admin() to authenticated;
+grant execute on function sistema_comercio.is_admin_or_encargado() to authenticated;
 
 -- ============== NUMERACIÓN POR EMPRESA ==============
 -- Incrementa y devuelve el siguiente valor del contador (empresa, clave),
 -- creando la fila si no existe. SECURITY DEFINER para que el flujo anon de la
 -- web (pedidos) pueda numerar sin permisos directos sobre `contadores`.
-create or replace function public.siguiente_numero(p_empresa_id uuid, p_clave text)
-returns bigint language plpgsql security definer set search_path = public as $$
+create or replace function sistema_comercio.siguiente_numero(p_empresa_id uuid, p_clave text)
+returns bigint language plpgsql security definer set search_path = sistema_comercio, public as $$
 declare v_val bigint;
 begin
   insert into contadores(empresa_id, clave, valor) values (p_empresa_id, p_clave, 1)
@@ -59,11 +62,11 @@ end $$;
 -- ============== TRIGGER: default empresa_id = empresa del empleado ==============
 -- Para inserts de usuarios autenticados que no setean empresa_id explícito.
 -- No pisa un empresa_id ya provisto (flujo anon / provisioning).
-create or replace function public.set_empresa_id_default()
-returns trigger language plpgsql security definer set search_path = public as $$
+create or replace function sistema_comercio.set_empresa_id_default()
+returns trigger language plpgsql security definer set search_path = sistema_comercio, public as $$
 begin
   if new.empresa_id is null then
-    new.empresa_id := public.empresa_actual_id();
+    new.empresa_id := sistema_comercio.empresa_actual_id();
   end if;
   return new;
 end $$;
@@ -77,42 +80,42 @@ begin
     'stock_items','movimientos_stock','transferencias','clientes','movimientos_ctacte',
     'sesiones_caja','ventas','movimientos_caja','notas_credito','pedidos_web','logs_auditoria'
   ]) loop
-    execute format('drop trigger if exists trg_set_empresa_id on %I', t);
+    execute format('drop trigger if exists trg_set_empresa_id on sistema_comercio.%I', t);
     execute format(
-      'create trigger trg_set_empresa_id before insert on %I
-       for each row execute function public.set_empresa_id_default()', t);
+      'create trigger trg_set_empresa_id before insert on sistema_comercio.%I
+       for each row execute function sistema_comercio.set_empresa_id_default()', t);
   end loop;
 end $$;
 
 -- ============== TRIGGERS: timestamps de trazabilidad ==============
-create or replace function public.set_precio_actualizado_en()
+create or replace function sistema_comercio.set_precio_actualizado_en()
 returns trigger language plpgsql as $$
 begin
   if new.escalas is distinct from old.escalas then new.actualizado_en := now(); end if;
   return new;
 end $$;
-drop trigger if exists trg_precio_actualizado_en on producto_lista_precio;
-create trigger trg_precio_actualizado_en before update on producto_lista_precio
-  for each row execute function public.set_precio_actualizado_en();
+drop trigger if exists trg_precio_actualizado_en on sistema_comercio.producto_lista_precio;
+create trigger trg_precio_actualizado_en before update on sistema_comercio.producto_lista_precio
+  for each row execute function sistema_comercio.set_precio_actualizado_en();
 
-create or replace function public.set_costo_actualizado_en()
+create or replace function sistema_comercio.set_costo_actualizado_en()
 returns trigger language plpgsql as $$
 begin
   if new.costo is distinct from old.costo then new.costo_actualizado_en := now(); end if;
   return new;
 end $$;
-drop trigger if exists trg_costo_actualizado_en on productos;
-create trigger trg_costo_actualizado_en before update on productos
-  for each row execute function public.set_costo_actualizado_en();
+drop trigger if exists trg_costo_actualizado_en on sistema_comercio.productos;
+create trigger trg_costo_actualizado_en before update on sistema_comercio.productos
+  for each row execute function sistema_comercio.set_costo_actualizado_en();
 
 -- ============== RPC: crear_venta (atómica, multi-empresa) ==============
 -- Deriva la empresa del empleado logueado. Numera por empresa con el prefijo
 -- del local (numeracion_prefijo). Permite stock negativo (no valida).
-create or replace function public.rpc_crear_venta(
+create or replace function sistema_comercio.rpc_crear_venta(
   p_caja_id uuid, p_sesion_caja_id uuid, p_local_id uuid, p_deposito_id uuid,
   p_empleado_id uuid, p_cliente_id uuid, p_items jsonb, p_pagos jsonb,
   p_subtotal numeric, p_descuento_total numeric, p_recargo_total numeric, p_total numeric
-) returns ventas language plpgsql security definer set search_path = public as $$
+) returns ventas language plpgsql security definer set search_path = sistema_comercio, public as $$
 declare
   v_empresa uuid;
   v_prefijo text;
@@ -122,7 +125,7 @@ declare
   v_pago    jsonb;
   v_venta   ventas%rowtype;
 begin
-  v_empresa := public.empresa_actual_id();
+  v_empresa := sistema_comercio.empresa_actual_id();
   if v_empresa is null then
     raise exception 'No se pudo resolver la empresa del usuario logueado';
   end if;
@@ -130,7 +133,7 @@ begin
   select coalesce(numeracion_prefijo, '0001') into v_prefijo from locales where id = p_local_id;
   v_prefijo := coalesce(v_prefijo, '0001');
 
-  v_seq := public.siguiente_numero(v_empresa, 'ventas');
+  v_seq := sistema_comercio.siguiente_numero(v_empresa, 'ventas');
   v_numero := v_prefijo || '-' || lpad(v_seq::text, 8, '0');
 
   -- 1) Descontar stock (permite negativo)
@@ -178,12 +181,12 @@ begin
 
   return v_venta;
 end $$;
-grant execute on function public.rpc_crear_venta(uuid,uuid,uuid,uuid,uuid,uuid,jsonb,jsonb,numeric,numeric,numeric,numeric) to authenticated;
+grant execute on function sistema_comercio.rpc_crear_venta(uuid,uuid,uuid,uuid,uuid,uuid,jsonb,jsonb,numeric,numeric,numeric,numeric) to authenticated;
 
 -- ============== RPC: emitir_nota_credito (atómica, multi-empresa) ==============
-create or replace function public.rpc_emitir_nota_credito(
+create or replace function sistema_comercio.rpc_emitir_nota_credito(
   p_venta_id uuid, p_empleado_id uuid, p_motivo text, p_items jsonb
-) returns notas_credito language plpgsql security definer set search_path = public as $$
+) returns notas_credito language plpgsql security definer set search_path = sistema_comercio, public as $$
 declare
   v_empresa uuid;
   v_seq     bigint;
@@ -197,7 +200,7 @@ begin
   if v_venta.id is null then raise exception 'Venta % no encontrada', p_venta_id; end if;
   v_empresa := v_venta.empresa_id;
 
-  v_seq := public.siguiente_numero(v_empresa, 'notas_credito');
+  v_seq := sistema_comercio.siguiente_numero(v_empresa, 'notas_credito');
   v_numero := 'NC-0001-' || lpad(v_seq::text, 8, '0');
 
   for v_item in select * from jsonb_array_elements(p_items) loop
@@ -220,14 +223,14 @@ begin
     returning * into v_nc;
   return v_nc;
 end $$;
-grant execute on function public.rpc_emitir_nota_credito(uuid,uuid,text,jsonb) to authenticated;
+grant execute on function sistema_comercio.rpc_emitir_nota_credito(uuid,uuid,text,jsonb) to authenticated;
 
 -- ============== RPC: aplicar_delta_stock (atómico, sin race) ==============
-create or replace function public.rpc_aplicar_delta_stock(
+create or replace function sistema_comercio.rpc_aplicar_delta_stock(
   p_producto_id uuid, p_variante_id uuid, p_deposito_id uuid,
   p_delta numeric, p_permitir_negativo boolean default true
 ) returns table(cantidad_anterior numeric, cantidad_nueva numeric)
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = sistema_comercio, public as $$
 declare v_actual numeric; v_nueva numeric; v_empresa uuid;
 begin
   select empresa_id into v_empresa from productos where id = p_producto_id;
@@ -262,21 +265,21 @@ begin
   end if;
   return query select v_actual, v_nueva;
 end $$;
-grant execute on function public.rpc_aplicar_delta_stock(uuid,uuid,uuid,numeric,boolean) to authenticated;
+grant execute on function sistema_comercio.rpc_aplicar_delta_stock(uuid,uuid,uuid,numeric,boolean) to authenticated;
 
 -- ============== RPC: crear_pedido_web (anon, multi-empresa) ==============
 -- La web pública (anon) no tiene auth.uid(): la empresa llega explícita
 -- (resuelta por subdominio en el server de apps/web). SECURITY DEFINER bypasea
 -- RLS para insertar y devolver la fila.
-create or replace function public.rpc_crear_pedido_web(
+create or replace function sistema_comercio.rpc_crear_pedido_web(
   p_empresa_id uuid, p_cliente_datos jsonb, p_items jsonb,
   p_subtotal numeric, p_descuento_total numeric, p_total numeric,
   p_metodo_pago text, p_forma_entrega text, p_notas text default null
-) returns pedidos_web language plpgsql security definer set search_path = public as $$
+) returns pedidos_web language plpgsql security definer set search_path = sistema_comercio, public as $$
 declare v_nuevo pedidos_web; v_num bigint;
 begin
   if p_empresa_id is null then raise exception 'empresa_id requerido'; end if;
-  v_num := public.siguiente_numero(p_empresa_id, 'pedidos_web');
+  v_num := sistema_comercio.siguiente_numero(p_empresa_id, 'pedidos_web');
   insert into pedidos_web(
     empresa_id, numero, cliente_datos, items, subtotal, descuento_total, total,
     metodo_pago, forma_entrega, notas
@@ -286,4 +289,4 @@ begin
   ) returning * into v_nuevo;
   return v_nuevo;
 end $$;
-grant execute on function public.rpc_crear_pedido_web(uuid,jsonb,jsonb,numeric,numeric,numeric,text,text,text) to anon, authenticated;
+grant execute on function sistema_comercio.rpc_crear_pedido_web(uuid,jsonb,jsonb,numeric,numeric,numeric,text,text,text) to anon, authenticated;

@@ -11,9 +11,12 @@
 --
 -- Pensada para el OPERADOR del SaaS: se ejecuta con service_role (que además
 -- saltea RLS). NO se concede a anon/authenticated.
+-- Todo bajo el schema `sistema_comercio` (ver 0001_schema.sql).
 -- ===========================================================================
 
-create or replace function public.rpc_provisionar_empresa(
+set search_path = sistema_comercio, public;
+
+create or replace function sistema_comercio.rpc_provisionar_empresa(
   p_nombre text,
   p_subdominio text default null,
   p_cuit text default null
@@ -22,7 +25,7 @@ create or replace function public.rpc_provisionar_empresa(
   rol_admin_id uuid, rol_encargado_id uuid, rol_cajero_id uuid, rol_catalogo_id uuid,
   lista_cf_id uuid, lista_may_id uuid,
   deposito_central_id uuid
-) language plpgsql security definer set search_path = public as $$
+) language plpgsql security definer set search_path = sistema_comercio, public as $$
 declare
   v_emp uuid;
   v_admin uuid; v_enc uuid; v_caj uuid; v_cat uuid;
@@ -54,13 +57,13 @@ begin
   return query select v_emp, v_admin, v_enc, v_caj, v_cat, v_cf, v_may, v_dep;
 end $$;
 
-grant execute on function public.rpc_provisionar_empresa(text,text,text) to service_role;
+grant execute on function sistema_comercio.rpc_provisionar_empresa(text,text,text) to service_role;
 
 -- ---------------------------------------------------------------------------
 -- SEED DEMO (opcional, manual). Descomentar para crear una empresa de prueba
 -- en una base de desarrollo. NO dejar activo en producción.
 --
---   select * from public.rpc_provisionar_empresa('Comercio Demo', 'demo', null);
+--   select * from sistema_comercio.rpc_provisionar_empresa('Comercio Demo', 'demo', null);
 --
 -- Después, crear el usuario admin con el script de onboarding (service_role +
 -- Auth Admin API) y linkearlo a un empleado con rol_admin de la empresa demo.

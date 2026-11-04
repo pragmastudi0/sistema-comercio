@@ -13,47 +13,64 @@
 --   0004_seed_provisioning.sql → función provisionar_empresa + empresa demo
 --
 -- Idempotente: IF NOT EXISTS / CREATE OR REPLACE.
+--
+-- NAMESPACING: todo vive bajo el schema `sistema_comercio` (tablas, enums,
+-- funciones, triggers). El search_path se fija acá para que el resto del
+-- archivo cree los objetos ahí sin calificar cada nombre. Las apps conectan
+-- con el cliente Supabase configurado con { db: { schema: 'sistema_comercio' } }.
+-- IMPORTANTE: exponer el schema en Supabase (API settings) — ver docs/SCHEMA.md.
+-- Usamos gen_random_uuid() (core en PG13+), sin depender de uuid-ossp.
 -- ===========================================================================
 
-create extension if not exists "uuid-ossp";
-create extension if not exists "pgcrypto";
+create schema if not exists sistema_comercio;
+set search_path = sistema_comercio, public;
 
 -- ============== ENUMS ==============
+-- La existencia se chequea DENTRO del schema sistema_comercio (n.nspname),
+-- para no colisionar con tipos homónimos de otros schemas.
 do $$
 begin
-  if not exists (select 1 from pg_type where typname = 'tipo_deposito') then
-    create type tipo_deposito as enum ('central', 'local', 'web');
+  if not exists (select 1 from pg_type t join pg_namespace n on n.oid = t.typnamespace
+                 where t.typname = 'tipo_deposito' and n.nspname = 'sistema_comercio') then
+    create type sistema_comercio.tipo_deposito as enum ('central', 'local', 'web');
   end if;
-  if not exists (select 1 from pg_type where typname = 'estado_venta') then
-    create type estado_venta as enum ('completada', 'anulada', 'presupuesto', 'cancelada');
+  if not exists (select 1 from pg_type t join pg_namespace n on n.oid = t.typnamespace
+                 where t.typname = 'estado_venta' and n.nspname = 'sistema_comercio') then
+    create type sistema_comercio.estado_venta as enum ('completada', 'anulada', 'presupuesto', 'cancelada');
   end if;
-  if not exists (select 1 from pg_type where typname = 'estado_sesion') then
-    create type estado_sesion as enum ('abierta', 'cerrada');
+  if not exists (select 1 from pg_type t join pg_namespace n on n.oid = t.typnamespace
+                 where t.typname = 'estado_sesion' and n.nspname = 'sistema_comercio') then
+    create type sistema_comercio.estado_sesion as enum ('abierta', 'cerrada');
   end if;
-  if not exists (select 1 from pg_type where typname = 'estado_transferencia') then
-    create type estado_transferencia as enum ('borrador', 'emitida', 'recibida', 'anulada');
+  if not exists (select 1 from pg_type t join pg_namespace n on n.oid = t.typnamespace
+                 where t.typname = 'estado_transferencia' and n.nspname = 'sistema_comercio') then
+    create type sistema_comercio.estado_transferencia as enum ('borrador', 'emitida', 'recibida', 'anulada');
   end if;
-  if not exists (select 1 from pg_type where typname = 'metodo_pago') then
-    create type metodo_pago as enum ('efectivo', 'transferencia', 'debito', 'credito', 'qr', 'cta_cte');
+  if not exists (select 1 from pg_type t join pg_namespace n on n.oid = t.typnamespace
+                 where t.typname = 'metodo_pago' and n.nspname = 'sistema_comercio') then
+    create type sistema_comercio.metodo_pago as enum ('efectivo', 'transferencia', 'debito', 'credito', 'qr', 'cta_cte');
   end if;
-  if not exists (select 1 from pg_type where typname = 'tipo_movimiento_caja') then
-    create type tipo_movimiento_caja as enum ('venta', 'ingreso', 'egreso', 'retiro', 'anulacion');
+  if not exists (select 1 from pg_type t join pg_namespace n on n.oid = t.typnamespace
+                 where t.typname = 'tipo_movimiento_caja' and n.nspname = 'sistema_comercio') then
+    create type sistema_comercio.tipo_movimiento_caja as enum ('venta', 'ingreso', 'egreso', 'retiro', 'anulacion');
   end if;
-  if not exists (select 1 from pg_type where typname = 'tipo_movimiento_stock') then
-    create type tipo_movimiento_stock as enum (
+  if not exists (select 1 from pg_type t join pg_namespace n on n.oid = t.typnamespace
+                 where t.typname = 'tipo_movimiento_stock' and n.nspname = 'sistema_comercio') then
+    create type sistema_comercio.tipo_movimiento_stock as enum (
       'venta', 'devolucion', 'ajuste', 'merma',
       'transferencia_salida', 'transferencia_entrada'
     );
   end if;
-  if not exists (select 1 from pg_type where typname = 'tipo_movimiento_ctacte') then
-    create type tipo_movimiento_ctacte as enum ('cargo', 'pago', 'condonacion', 'ajuste');
+  if not exists (select 1 from pg_type t join pg_namespace n on n.oid = t.typnamespace
+                 where t.typname = 'tipo_movimiento_ctacte' and n.nspname = 'sistema_comercio') then
+    create type sistema_comercio.tipo_movimiento_ctacte as enum ('cargo', 'pago', 'condonacion', 'ajuste');
   end if;
 end $$;
 
 -- ============== TENANT ROOT ==============
 
 create table if not exists empresas (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   nombre text not null,
   -- subdominio para resolver la tienda web pública (empresa.<ROOT_DOMAIN>).
   subdominio text unique,
@@ -86,7 +103,7 @@ create table if not exists configuracion_empresa (
 -- ============== ESTRUCTURA FÍSICA ==============
 
 create table if not exists locales (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   nombre text not null,
   direccion text,
@@ -97,7 +114,7 @@ create table if not exists locales (
 create index if not exists locales_empresa_idx on locales(empresa_id);
 
 create table if not exists depositos (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   nombre text not null,
   tipo tipo_deposito not null,
@@ -107,7 +124,7 @@ create table if not exists depositos (
 create index if not exists depositos_empresa_idx on depositos(empresa_id);
 
 create table if not exists cajas (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   local_id uuid not null references locales(id) on delete cascade,
   nombre text not null,
@@ -118,7 +135,7 @@ create index if not exists cajas_empresa_idx on cajas(empresa_id);
 -- ============== ROLES Y EMPLEADOS ==============
 
 create table if not exists roles (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   nombre text not null,
   preset boolean not null default false,
@@ -132,7 +149,7 @@ create unique index if not exists roles_empresa_preset_uq
   on roles(empresa_id, preset_key) where preset_key is not null;
 
 create table if not exists empleados (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   -- Vinculación con Supabase Auth (auth.users.id). Único global: un usuario
   -- de login pertenece a exactamente una empresa.
@@ -154,7 +171,7 @@ create index if not exists empleados_auth_idx on empleados(auth_user_id);
 -- ============== CATÁLOGO ==============
 
 create table if not exists categorias (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   nombre text not null,
   parent_id uuid references categorias(id) on delete set null,
@@ -163,7 +180,7 @@ create table if not exists categorias (
 create index if not exists categorias_empresa_idx on categorias(empresa_id);
 
 create table if not exists proveedores (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   nombre text not null,
   cuit text,
@@ -175,7 +192,7 @@ create table if not exists proveedores (
 create index if not exists proveedores_empresa_idx on proveedores(empresa_id);
 
 create table if not exists productos (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   codigo_interno text not null,
   nombre text not null,
@@ -221,7 +238,7 @@ create index if not exists productos_categoria_idx on productos(empresa_id, cate
 create index if not exists productos_nombre_idx on productos using gin (to_tsvector('spanish', nombre));
 
 create table if not exists variantes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   producto_id uuid not null references productos(id) on delete cascade,
   atributos jsonb not null,
@@ -230,7 +247,7 @@ create table if not exists variantes (
 create index if not exists variantes_producto_idx on variantes(producto_id);
 
 create table if not exists producto_imagenes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   producto_id uuid not null references productos(id) on delete cascade,
   url text not null,
@@ -241,7 +258,7 @@ create index if not exists producto_imagenes_producto_idx on producto_imagenes(p
 -- ============== PRECIOS ==============
 
 create table if not exists listas_precio (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   nombre text not null,
   es_default boolean not null default false,
@@ -280,7 +297,7 @@ create index if not exists stock_deposito_idx on stock_items(deposito_id);
 create index if not exists stock_empresa_idx on stock_items(empresa_id);
 
 create table if not exists movimientos_stock (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   producto_id uuid not null references productos(id) on delete cascade,
   variante_id uuid references variantes(id) on delete cascade,
@@ -297,7 +314,7 @@ create index if not exists movs_stock_deposito_idx on movimientos_stock(deposito
 create index if not exists movs_stock_empresa_idx on movimientos_stock(empresa_id, fecha desc);
 
 create table if not exists transferencias (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   deposito_origen_id uuid not null references depositos(id),
   deposito_destino_id uuid not null references depositos(id),
@@ -314,7 +331,7 @@ create index if not exists transferencias_empresa_idx on transferencias(empresa_
 -- ============== CLIENTES / CTA CTE ==============
 
 create table if not exists clientes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   nombre text not null,
   apellido text not null,
@@ -338,7 +355,7 @@ create index if not exists clientes_dni_idx on clientes(dni);
 -- ============== CAJA / VENTAS ==============
 
 create table if not exists sesiones_caja (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   caja_id uuid not null references cajas(id),
   empleado_id uuid not null references empleados(id),
@@ -355,7 +372,7 @@ create index if not exists sesiones_caja_emp_actual_idx
   on sesiones_caja(empleado_actual_id) where empleado_actual_id is not null;
 
 create table if not exists ventas (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   numero text not null,
   caja_id uuid not null references cajas(id),
@@ -383,7 +400,7 @@ create index if not exists ventas_empleado_idx on ventas(empleado_id, fecha desc
 create index if not exists ventas_sesion_idx on ventas(sesion_caja_id);
 
 create table if not exists movimientos_caja (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   sesion_caja_id uuid not null references sesiones_caja(id) on delete cascade,
   tipo tipo_movimiento_caja not null,
@@ -397,7 +414,7 @@ create table if not exists movimientos_caja (
 create index if not exists movs_caja_sesion_idx on movimientos_caja(sesion_caja_id);
 
 create table if not exists movimientos_ctacte (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   cliente_id uuid not null references clientes(id) on delete cascade,
   tipo tipo_movimiento_ctacte not null,
@@ -411,7 +428,7 @@ create table if not exists movimientos_ctacte (
 create index if not exists movs_ctacte_cliente_idx on movimientos_ctacte(cliente_id, fecha desc);
 
 create table if not exists notas_credito (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   numero text not null,
   venta_id uuid not null references ventas(id) on delete cascade,
@@ -459,7 +476,7 @@ create table if not exists contadores (
 );
 
 create table if not exists logs_auditoria (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references empresas(id) on delete cascade,
   empleado_id uuid references empleados(id),
   accion text not null,

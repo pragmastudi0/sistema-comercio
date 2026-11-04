@@ -15,6 +15,31 @@ El esquema vive **solo** en `supabase/migrations/`, en orden:
 
 Se consolidaron las 14 migraciones + 11 SQL sueltos del sistema original en este set limpio.
 
+## Schema de Postgres: `sistema_comercio`
+
+**Todo el modelo vive bajo el schema `sistema_comercio`** (tablas, enums, funciones/RPCs,
+triggers) — no en `public`. Las migraciones fijan `set search_path = sistema_comercio, public`
+y crean el schema al inicio. Se usa `gen_random_uuid()` (core, PG13+), sin `uuid-ossp`.
+
+En el código, el cliente Supabase se crea con `{ db: { schema: 'sistema_comercio' } }`
+(`packages/db/src/supabase/client.ts`), así cada `.from()`/`.rpc()` apunta al schema sin
+calificar. Lo mismo la Edge Function y los scripts `.mjs`.
+
+### ⚠️ Paso obligatorio en Supabase: exponer el schema
+
+PostgREST (la API REST de Supabase) solo expone `public` por default. Hay que **agregar
+`sistema_comercio` a los schemas expuestos**, si no toda query da `PGRST106 / schema must be
+one of the following`. Dos formas:
+
+- **Dashboard**: Project → Settings → API → *Exposed schemas* → agregar `sistema_comercio`.
+- **SQL** (equivalente):
+  ```sql
+  alter role authenticator set pgrst.db_schemas = 'public, graphql_public, sistema_comercio';
+  notify pgrst, 'reload config';
+  ```
+
+Este paso es parte del alta de una instancia nueva (ver `docs/ONBOARDING-CLIENTE.md`).
+
 ## Modelo multi-empresa (cómo aísla)
 
 - **`empresa_id` en cada tabla de dominio.** La tabla raíz es `empresas` (con `subdominio`

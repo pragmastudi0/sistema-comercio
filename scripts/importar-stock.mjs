@@ -62,6 +62,7 @@ if (!SUPABASE_URL || !SERVICE_ROLE) {
 }
 
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
+  db: { schema: 'sistema_comercio' },
   auth: { autoRefreshToken: false, persistSession: false },
 });
 

@@ -39,6 +39,10 @@ export function createSupabaseRaw(
   if (existing) return existing;
 
   const client = createClient(url, anonKey, {
+    // Todas las tablas/RPC viven bajo el schema `sistema_comercio`. Con esto,
+    // cada .from()/.rpc() apunta ahí sin tener que calificar en cada call-site.
+    // OJO: el schema debe estar EXPUESTO en Supabase (API settings) — ver docs/SCHEMA.md.
+    db: { schema: 'sistema_comercio' },
     auth: {
       // Mantener sesión en localStorage entre recargas.
       persistSession: true,
@@ -52,7 +56,10 @@ export function createSupabaseRaw(
       flowType: 'pkce',
       ...(opts?.storageKey ? { storageKey: opts.storageKey } : {}),
     },
-  });
+    // El cast de abajo normaliza el tipo: con `db.schema` el genérico de schema
+    // del cliente cambia y no matchea el alias `SupabaseClient` (default public).
+    // El schema aplica en runtime igual; el resto del código usa el tipo default.
+  }) as unknown as SupabaseClient;
   cache.set(cacheKey, client);
 
   // Cuando la tab vuelve al foco (usuario destraba el tablet), forzar

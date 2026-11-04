@@ -65,8 +65,10 @@ serve(async (req) => {
     return res({ error: 'La contraseña debe tener al menos 6 caracteres.' }, 400);
   }
 
-  // Cliente service_role para todo el trabajo de admin.
+  // Cliente service_role para todo el trabajo de admin. Las tablas
+  // (empleados, logs_auditoria) viven bajo el schema `sistema_comercio`.
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
+    db: { schema: 'sistema_comercio' },
     auth: { autoRefreshToken: false, persistSession: false },
   });
 

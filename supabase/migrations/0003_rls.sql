@@ -11,9 +11,15 @@
 --
 -- Los helpers empresa_actual_id()/is_admin()/... son SECURITY DEFINER y leen
 -- `empleados` salteando RLS → no hay recursión aunque empleados tenga policies.
+-- Todo bajo el schema `sistema_comercio` (ver 0001_schema.sql).
 -- ===========================================================================
 
 begin;
+
+set search_path = sistema_comercio, public;
+
+-- Acceso al schema para los roles de PostgREST (RLS igual filtra las filas).
+grant usage on schema sistema_comercio to anon, authenticated, service_role;
 
 -- ============== ENABLE RLS en todo ==============
 do $$
@@ -26,7 +32,7 @@ begin
     'movimientos_ctacte','sesiones_caja','ventas','movimientos_caja','notas_credito',
     'pedidos_web','contadores','logs_auditoria'
   ]) loop
-    execute format('alter table %I enable row level security', t);
+    execute format('alter table sistema_comercio.%I enable row level security', t);
   end loop;
 end $$;
 
@@ -41,11 +47,11 @@ begin
     'sesiones_caja','ventas','movimientos_caja','notas_credito','pedidos_web',
     'contadores','logs_auditoria'
   ]) loop
-    execute format('drop policy if exists %I_tenant_all on %I', t, t);
+    execute format('drop policy if exists %I_tenant_all on sistema_comercio.%I', t, t);
     execute format(
-      'create policy %I_tenant_all on %I for all to authenticated
-         using (empresa_id = public.empresa_actual_id())
-         with check (empresa_id = public.empresa_actual_id())', t, t);
+      'create policy %I_tenant_all on sistema_comercio.%I for all to authenticated
+         using (empresa_id = sistema_comercio.empresa_actual_id())
+         with check (empresa_id = sistema_comercio.empresa_actual_id())', t, t);
   end loop;
 end $$;
 
@@ -59,14 +65,14 @@ begin
     'productos','categorias','listas_precio','producto_lista_precio',
     'producto_imagenes','variantes'
   ]) loop
-    execute format('drop policy if exists %I_public_select on %I', t, t);
-    execute format('create policy %I_public_select on %I for select to anon using (true)', t, t);
+    execute format('drop policy if exists %I_public_select on sistema_comercio.%I', t, t);
+    execute format('create policy %I_public_select on sistema_comercio.%I for select to anon using (true)', t, t);
 
-    execute format('drop policy if exists %I_tenant_all on %I', t, t);
+    execute format('drop policy if exists %I_tenant_all on sistema_comercio.%I', t, t);
     execute format(
-      'create policy %I_tenant_all on %I for all to authenticated
-         using (empresa_id = public.empresa_actual_id())
-         with check (empresa_id = public.empresa_actual_id())', t, t);
+      'create policy %I_tenant_all on sistema_comercio.%I for all to authenticated
+         using (empresa_id = sistema_comercio.empresa_actual_id())
+         with check (empresa_id = sistema_comercio.empresa_actual_id())', t, t);
   end loop;
 end $$;
 
@@ -76,8 +82,8 @@ drop policy if exists empresas_public_select on empresas;
 create policy empresas_public_select on empresas for select to anon using (true);
 drop policy if exists empresas_tenant on empresas;
 create policy empresas_tenant on empresas for all to authenticated
-  using (id = public.empresa_actual_id())
-  with check (id = public.empresa_actual_id());
+  using (id = sistema_comercio.empresa_actual_id())
+  with check (id = sistema_comercio.empresa_actual_id());
 
 -- ============== configuracion_empresa ==============
 -- anon: lee (branding/mayorista de la tienda). authenticated: lee la propia,
@@ -87,11 +93,11 @@ drop policy if exists config_public_select on configuracion_empresa;
 create policy config_public_select on configuracion_empresa for select to anon using (true);
 drop policy if exists config_tenant_select on configuracion_empresa;
 create policy config_tenant_select on configuracion_empresa for select to authenticated
-  using (empresa_id = public.empresa_actual_id());
+  using (empresa_id = sistema_comercio.empresa_actual_id());
 drop policy if exists config_tenant_modify on configuracion_empresa;
 create policy config_tenant_modify on configuracion_empresa for all to authenticated
-  using (empresa_id = public.empresa_actual_id() and public.is_admin())
-  with check (empresa_id = public.empresa_actual_id() and public.is_admin());
+  using (empresa_id = sistema_comercio.empresa_actual_id() and sistema_comercio.is_admin())
+  with check (empresa_id = sistema_comercio.empresa_actual_id() and sistema_comercio.is_admin());
 
 commit;
 

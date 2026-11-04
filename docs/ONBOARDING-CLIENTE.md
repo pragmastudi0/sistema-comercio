@@ -8,15 +8,20 @@ sin DB, ver [`DEMO.md`](./DEMO.md).
 
 ## 1. Base de datos (Supabase)
 
-1. Crear un proyecto Supabase nuevo para el cliente.
-2. Aplicar el esquema. **Hoy esto requiere cuidado** porque el schema está fragmentado
-   (ver [`SCHEMA.md`](./SCHEMA.md)): correr `supabase/migrations/0001`–`0014` **y además** los
-   `scripts/migrations-*.sql` en orden cronológico. Objetivo de la Fase 2: que baste
-   `supabase/migrations/`.
-3. Aplicar el bucket de storage (`producto-imagenes`) y las policies (migración `0004`).
-4. Desplegar la Edge Function `supabase/functions/set-empleado-password`.
-5. Cargar la configuración inicial del comercio en `configuracion_empresa` (nombre, CUIT,
-   dirección, WhatsApp, horario, cuotas y recargos, descuento efectivo).
+1. Crear un proyecto Supabase nuevo (una sola base sirve a todas las empresas si es multi-tenant;
+   ver [`SCHEMA.md`](./SCHEMA.md)).
+2. Aplicar las migraciones `supabase/migrations/0001`–`0004` (aplican de cero, en orden). Todo el
+   modelo queda bajo el schema **`sistema_comercio`**.
+3. **Exponer el schema `sistema_comercio`** en Supabase (Settings → API → Exposed schemas, o el
+   SQL equivalente en [`SCHEMA.md`](./SCHEMA.md)). Sin esto, la API REST no ve las tablas.
+4. Crear el bucket de storage `producto-imagenes` (las policies van en `0003_rls.sql`).
+5. Desplegar la Edge Function `supabase/functions/set-empleado-password`.
+6. **Dar de alta la empresa**: `select * from sistema_comercio.rpc_provisionar_empresa('<nombre>', '<subdominio>', '<cuit>');`
+   (crea empresa + configuración + 4 roles preset + listas CF/Mayorista + depósito central).
+7. Crear el primer usuario admin (Supabase Auth + fila `empleados` con rol admin de la empresa),
+   con un script que use el `service_role` + Auth Admin API.
+8. Ajustar la configuración del comercio en `configuracion_empresa` (cuotas, descuento efectivo,
+   datos del comercio, etc.).
 
 ## 2. Datos iniciales
 
